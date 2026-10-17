@@ -45,11 +45,11 @@ jobs:
       contents: read
       pull-requests: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
-      - uses: wagoid/commitlint-github-action@v5
+      - uses: wagoid/commitlint-github-action@v6
         with:
           configFile: ./commitlint.config.mjs
 
@@ -62,7 +62,7 @@ jobs:
 
       - name: Explain PR title failure
         if: always() && github.event_name == 'pull_request' && steps.lint_pr_title.outputs.error_message != null
-        uses: marocchino/sticky-pull-request-comment@v2
+        uses: marocchino/sticky-pull-request-comment@v3
         with:
           header: pr-title-lint-error
           message: |
@@ -76,7 +76,7 @@ jobs:
 
       - name: Clear PR title failure
         if: github.event_name == 'pull_request' && steps.lint_pr_title.outputs.error_message == null
-        uses: marocchino/sticky-pull-request-comment@v2
+        uses: marocchino/sticky-pull-request-comment@v3
         with:
           header: pr-title-lint-error
           delete: true
@@ -85,9 +85,9 @@ jobs:
     name: Protobuf
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v7
         with:
           go-version-file: go.mod
           cache: true
@@ -101,9 +101,9 @@ jobs:
     name: UI
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
           cache: yarn
@@ -126,9 +126,9 @@ jobs:
     name: Go lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v7
         with:
           go-version-file: go.mod
           cache: true
@@ -146,15 +146,15 @@ jobs:
     name: Go tests
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v7
         with:
           go-version-file: go.mod
           cache: true
 
       # The suite shells out to the flux CLI; keep it in step with the Makefile.
-      - uses: fluxcd/flux2/action@4a15fa6a023259353ef750acf1c98fe88407d4d0
+      - uses: fluxcd/flux2/action@b9c17924adb533d3617ec7de97a7b0f4acc07b39
         with:
           version: ${{ env.FLUX_VERSION }}
 
@@ -168,9 +168,9 @@ jobs:
     name: Helm chart
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: azure/setup-helm@v4
+      - uses: azure/setup-helm@v5
         with:
           version: v3.17.0
 
@@ -204,9 +204,9 @@ jobs:
       packages: write
       id-token: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v7
         with:
           go-version-file: go.mod
           cache: true
@@ -222,11 +222,11 @@ jobs:
           fi
           echo "LDFLAGS=$(make echo-ldflags)" >> "$GITHUB_ENV"
 
-      - uses: docker/setup-buildx-action@v3
+      - uses: docker/setup-buildx-action@v4
 
       - name: Log in to GHCR
         if: env.PUBLISH == 'true'
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
@@ -236,7 +236,7 @@ jobs:
       # provenance and signing only happen for a release.
       - name: Build
         if: env.PUBLISH != 'true'
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v7
         with:
           context: .
           file: gitops-server.dockerfile
@@ -251,7 +251,7 @@ jobs:
       - name: Build and push
         id: build
         if: env.PUBLISH == 'true'
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v7
         with:
           context: .
           file: gitops-server.dockerfile
@@ -290,9 +290,9 @@ jobs:
       packages: write
       id-token: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: azure/setup-helm@v4
+      - uses: azure/setup-helm@v5
         with:
           version: v3.17.0
 
