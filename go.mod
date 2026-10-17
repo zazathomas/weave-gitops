@@ -26,7 +26,7 @@ require (
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.27.7
 	github.com/grpc-ecosystem/protoc-gen-grpc-gateway-ts v1.1.2
 	github.com/hashicorp/go-multierror v1.1.1
-	github.com/johannesboyne/gofakes3 v0.0.0-20250916175020-ebf3e50324d3
+	github.com/johannesboyne/gofakes3 v1.2.0
 	github.com/maxbrunsfeld/counterfeiter/v6 v6.12.0
 	github.com/minio/minio-go/v7 v7.0.95
 	github.com/oauth2-proxy/mockoidc v0.0.0-20240214162133-caebfff84d25
