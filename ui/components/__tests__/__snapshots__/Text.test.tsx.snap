@@ -1,0 +1,56 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`Text snapshots bold 1`] = `
+<DocumentFragment>
+  .c0 {
+  font-family: 'proxima-nova',Helvetica,Arial,sans-serif;
+  font-size: 14px;
+  font-weight: 800;
+  text-transform: none;
+  font-style: normal;
+}
+
+<span
+    class="c0"
+  >
+    some text
+  </span>
+</DocumentFragment>
+`;
+
+exports[`Text snapshots normal 1`] = `
+<DocumentFragment>
+  .c0 {
+  font-family: 'proxima-nova',Helvetica,Arial,sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  text-transform: none;
+  font-style: normal;
+}
+
+<span
+    class="c0"
+  >
+    some text
+  </span>
+</DocumentFragment>
+`;
+
+exports[`Text snapshots with color 1`] = `
+<DocumentFragment>
+  .c0 {
+  font-family: 'proxima-nova',Helvetica,Arial,sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  text-transform: none;
+  font-style: normal;
+  color: #27AE60;
+}
+
+<span
+    class="c0"
+  >
+    some text
+  </span>
+</DocumentFragment>
+`;

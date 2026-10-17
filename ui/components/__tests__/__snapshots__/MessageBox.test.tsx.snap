@@ -1,0 +1,27 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`MessageBox snapshots renders 1`] = `
+<DocumentFragment>
+  .c0 {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: 5px 10px 50px 3px #0000001a;
+}
+
+.c1 {
+  box-sizing: border-box;
+  width: 560px;
+  padding: 24px 48px 64px;
+  border-radius: 10px;
+  background-color: #C2C9D7;
+  color: #737373;
+}
+
+<div
+    class="c0 c1"
+  >
+    Column and items centered.
+  </div>
+</DocumentFragment>
+`;

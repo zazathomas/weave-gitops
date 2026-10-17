@@ -1,0 +1,213 @@
+import _ from "lodash";
+import qs from "query-string";
+import { Kind } from "./api/core/types.pb";
+import { NoNamespace, PageRoute, V2Routes } from "./types";
+
+// getParentNavValue returns the parent for a child page.
+// This keeps the nav element highlighted if we are on a child page.
+// Example: /sources and /git_repo will both show the "Sources" nav as selected.
+export const getParentNavValue = (
+  path: string,
+): V2Routes | PageRoute | boolean => {
+  const [, currentPage] = _.split(path, "/");
+  switch (`/${currentPage}`) {
+    case V2Routes.Automations:
+    case V2Routes.Kustomization:
+    case V2Routes.HelmRelease:
+      return V2Routes.Automations;
+
+    case V2Routes.Sources:
+    case V2Routes.GitRepo:
+    case V2Routes.HelmChart:
+    case V2Routes.HelmRepo:
+    case V2Routes.Bucket:
+    case V2Routes.OCIRepository:
+    case V2Routes.ExternalArtifact:
+    case V2Routes.ArtifactGenerator:
+      return V2Routes.Sources;
+
+    case V2Routes.FluxRuntime:
+      return V2Routes.FluxRuntime;
+
+    case V2Routes.ImageAutomation:
+      return V2Routes.ImageAutomation;
+
+    case V2Routes.ImageAutomationUpdatesDetails:
+      return V2Routes.ImageUpdates;
+
+    case V2Routes.ImageAutomationRepositoryDetails:
+      return V2Routes.ImageRepositories;
+
+    case V2Routes.ImagePolicyDetails:
+      return V2Routes.ImagePolicies;
+
+    case V2Routes.Notifications:
+    case V2Routes.Provider:
+    case V2Routes.Receiver:
+      return V2Routes.Notifications;
+
+    case V2Routes.UserInfo:
+      return V2Routes.UserInfo;
+
+    case V2Routes.Policies:
+    case V2Routes.PolicyDetailsPage:
+      return V2Routes.Policies;
+
+    case V2Routes.PolicyViolationDetails:
+      return location.search.includes("kind=Policy")
+        ? V2Routes.Policies
+        : V2Routes.Automations;
+
+    default:
+      // The "Tabs" component of material-ui wants a bool
+      return false;
+  }
+};
+
+export const getParentNavRouteValue = (
+  path: string,
+): V2Routes | PageRoute | boolean => {
+  const [, currentPage] = _.split(path, "/");
+
+  switch (`/${currentPage}`) {
+    case V2Routes.Automations:
+    case V2Routes.Kustomization:
+    case V2Routes.HelmRelease:
+      return V2Routes.Automations;
+
+    case V2Routes.Sources:
+    case V2Routes.GitRepo:
+    case V2Routes.HelmChart:
+    case V2Routes.HelmRepo:
+    case V2Routes.Bucket:
+    case V2Routes.OCIRepository:
+    case V2Routes.ExternalArtifact:
+    case V2Routes.ArtifactGenerator:
+      return V2Routes.Sources;
+
+    case V2Routes.FluxRuntime:
+      return V2Routes.FluxRuntime;
+    case V2Routes.Runtime:
+      return V2Routes.Runtime;
+
+    case V2Routes.ImageAutomation:
+    case V2Routes.ImageAutomationUpdatesDetails:
+    case V2Routes.ImageAutomationRepositoryDetails:
+    case V2Routes.ImagePolicyDetails:
+      return V2Routes.ImageAutomation;
+
+    case V2Routes.Notifications:
+    case V2Routes.Provider:
+    case V2Routes.Receiver:
+      return V2Routes.Notifications;
+
+    case V2Routes.UserInfo:
+      return V2Routes.UserInfo;
+
+    case V2Routes.Policies:
+    case V2Routes.PolicyDetailsPage:
+      return V2Routes.Policies;
+
+    case V2Routes.PolicyViolationDetails:
+      return location.search.includes("kind=Policy")
+        ? V2Routes.Policies
+        : V2Routes.Automations;
+
+    default:
+      // The "Tabs" component of material-ui wants a bool
+      return false;
+  }
+};
+const pageTitles = {
+  [V2Routes.Automations]: "Applications",
+  [V2Routes.Sources]: "Sources",
+  [V2Routes.FluxRuntime]: "Flux Runtime",
+  [V2Routes.Notifications]: "Notifications",
+  [V2Routes.ImageAutomation]: "Image Automations",
+  [V2Routes.ImageAutomationUpdatesDetails]: "Image Automation Updates",
+  [V2Routes.ImageAutomationRepositoryDetails]: "Image Automation Repositories",
+  [V2Routes.ImagePolicies]: "Image Policies",
+  [V2Routes.ImagePolicyDetails]: "Image Policy Details",
+  [V2Routes.PolicyDetailsPage]: "Policy Details",
+  [V2Routes.ImageUpdates]: "Image Updates",
+  [V2Routes.ImageRepositories]: "Image Repositories",
+  [V2Routes.PolicyViolationDetails]: "Violation Logs",
+  [V2Routes.UserInfo]: "User Info",
+  [V2Routes.Policies]: "Policies",
+  [V2Routes.Runtime]: "Runtime",
+  [V2Routes.Provider]: "Provider",
+  [V2Routes.GitRepo]: "Git Repository",
+  [V2Routes.Bucket]: "Bucket",
+  [V2Routes.HelmRepo]: "Helm Repository",
+  [V2Routes.HelmChart]: "Helm Chart",
+  [V2Routes.Kustomization]: "Kustomization",
+  [V2Routes.HelmRelease]: "Helm Release",
+  [V2Routes.OCIRepository]: "OCI Repository",
+  [V2Routes.ExternalArtifact]: "External Artifact",
+  [V2Routes.ArtifactGenerator]: "Artifact Generator",
+  [V2Routes.Receiver]: "Receiver",
+  [V2Routes.NotImplemented]: "Not Implemented",
+};
+
+export const getPageLabel = (route: V2Routes): string => {
+  return pageTitles[route] || "";
+};
+
+export const formatURL = (page: string, query: any = {}) => {
+  return `${page}?${qs.stringify(query)}`;
+};
+
+export const formatSourceURL = (
+  kind: string,
+  name: string,
+  namespace: string = NoNamespace,
+  clusterName: string,
+) => {
+  return formatURL(objectTypeToRoute(Kind[kind]), {
+    name,
+    namespace,
+    clusterName,
+  });
+};
+
+export function objectTypeToRoute(t: Kind): V2Routes {
+  switch (t) {
+    case Kind.GitRepository:
+      return V2Routes.GitRepo;
+
+    case Kind.Bucket:
+      return V2Routes.Bucket;
+
+    case Kind.HelmRepository:
+      return V2Routes.HelmRepo;
+
+    case Kind.HelmChart:
+      return V2Routes.HelmChart;
+
+    case Kind.Kustomization:
+      return V2Routes.Kustomization;
+
+    case Kind.HelmRelease:
+      return V2Routes.HelmRelease;
+
+    case Kind.OCIRepository:
+      return V2Routes.OCIRepository;
+
+    case Kind.ExternalArtifact:
+      return V2Routes.ExternalArtifact;
+
+    case Kind.ArtifactGenerator:
+      return V2Routes.ArtifactGenerator;
+
+    case Kind.Provider:
+      return V2Routes.Provider;
+
+    case Kind.Receiver:
+      return V2Routes.Receiver;
+
+    default:
+      break;
+  }
+
+  return "" as V2Routes;
+}

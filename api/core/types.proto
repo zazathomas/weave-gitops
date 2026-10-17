@@ -1,0 +1,146 @@
+/**
+ * This file holds the protobuf definitions for messages and enums
+ * used in the Weave GitOps gRPC API.
+ */
+syntax = "proto3";
+
+package gitops_core.v1;
+
+option go_package = "github.com/zazathomas/weave-gitops/core/api";
+
+message Interval {
+    int64 hours = 1;
+    int64 minutes = 2;
+    int64 seconds = 3;
+}
+
+/**
+ * Kind enum defines the Kubernetes resource types used in the Core API.
+ */
+enum Kind {
+    GitRepository         = 0;
+    Bucket                = 1;
+    HelmRepository        = 2;
+    HelmChart             = 3;
+    Kustomization         = 4;
+    HelmRelease           = 5;
+    Cluster               = 6;
+    OCIRepository         = 7;
+    Provider              = 8;
+    Alert                 = 9;
+    ImageRepository       = 10;
+    ImageUpdateAutomation = 11;
+    ImagePolicy           = 12;
+    Pod                   = 13;
+    Policy                   = 14;
+    ExternalArtifact      = 15;
+    Receiver              = 16;
+    ArtifactGenerator     = 17;
+};
+
+/**
+ * HelmRepositoryType enum defines the type of HelmRepository used.
+ */
+enum HelmRepositoryType {
+    Default = 0;
+    OCI     = 1;
+};
+
+message ObjectRef {
+    string         kind      = 1;
+    string         name      = 2;
+    string         namespace = 3;
+    string         cluster_name = 4;
+}
+
+message Condition {
+    string type = 1;
+    string status = 2;
+    string reason = 3;
+    string message = 4;
+    string timestamp = 5;
+}
+
+message GitRepositoryRef {
+    string branch = 1;
+    string tag = 2;
+    string semver = 3;
+    string commit = 4;
+}
+
+// GroupVersionKind represents an objects Kubernetes API type data
+message GroupVersionKind {
+    string group   = 1;
+    string kind    = 2;
+    string version = 3;
+}
+
+message NamespacedObjectReference {
+    string name      = 1;
+    string namespace = 2;
+}
+
+message HealthStatus {
+    string status = 1;
+    string message = 2;
+}
+
+message InventoryEntry {
+    string payload = 1;
+    string tenant = 2;
+    string cluster_name = 3;
+    HealthStatus health = 4;
+    repeated InventoryEntry children = 5;
+}
+
+message Object {
+    string   payload                    = 1;
+    string   cluster_name                = 2;
+    string   tenant                     = 3;
+    string   uid                        = 4;
+    repeated GroupVersionKind inventory = 5;
+    string   info                       = 6;
+    HealthStatus health                 = 7;
+}
+
+message Deployment {
+    string   name                 = 1;
+    string   namespace            = 2;
+    repeated Condition conditions = 3;
+    repeated string images        = 4;
+    bool     suspended            = 5;
+    string   cluster_name          = 6;
+    string   uid                  = 7;
+    map<string, string> labels    = 8;
+}
+
+message Crd {
+    message Name {
+        string plural = 1;
+        string group  = 2;
+    }
+    Name     name                 = 1;
+    string   version              = 2;
+    string   kind                 = 3;
+    string   cluster_name          = 4;
+    string   uid                  = 5;
+}
+
+message Namespace {
+  string name = 1;
+  string status = 2;
+  map<string, string> annotations = 3;
+  map<string, string> labels = 4;
+  string cluster_name = 5;
+}
+
+message Event {
+    string type      = 1;
+    string reason    = 2;
+    string message   = 3;
+    string timestamp = 4;
+    string component = 5;
+    string host      = 6;
+    string name      = 7;
+    string uid       = 8;
+}

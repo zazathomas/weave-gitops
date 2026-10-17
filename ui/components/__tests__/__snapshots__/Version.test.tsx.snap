@@ -1,0 +1,221 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`Version snapshots renders a dash as plain text without version text and with version href 1`] = `
+<DocumentFragment>
+  .c0 {
+  display: flex;
+  flex-direction: row;
+  align-items: start;
+}
+
+.c1 {
+  font-family: 'proxima-nova',Helvetica,Arial,sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: none;
+  font-style: normal;
+  white-space: nowrap;
+}
+
+.c3 {
+  font-family: 'proxima-nova',Helvetica,Arial,sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  text-transform: none;
+  font-style: normal;
+}
+
+.c2 {
+  padding: 4px;
+}
+
+<div
+    class="c0 Version"
+  >
+    <span
+      class="c1"
+    >
+      product name:
+    </span>
+    <div
+      class="c2"
+    />
+    <span
+      class="c3"
+    >
+      -
+    </span>
+  </div>
+</DocumentFragment>
+`;
+
+exports[`Version snapshots renders a dash without version text and without version href 1`] = `
+<DocumentFragment>
+  .c0 {
+  display: flex;
+  flex-direction: row;
+  align-items: start;
+}
+
+.c1 {
+  font-family: 'proxima-nova',Helvetica,Arial,sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: none;
+  font-style: normal;
+  white-space: nowrap;
+}
+
+.c3 {
+  font-family: 'proxima-nova',Helvetica,Arial,sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  text-transform: none;
+  font-style: normal;
+}
+
+.c2 {
+  padding: 4px;
+}
+
+<div
+    class="c0 Version"
+  >
+    <span
+      class="c1"
+    >
+      product name:
+    </span>
+    <div
+      class="c2"
+    />
+    <span
+      class="c3"
+    >
+      -
+    </span>
+  </div>
+</DocumentFragment>
+`;
+
+exports[`Version snapshots renders a link with version text and version href 1`] = `
+<DocumentFragment>
+  .c0 {
+  display: flex;
+  flex-direction: row;
+  align-items: start;
+}
+
+.c1 {
+  font-family: 'proxima-nova',Helvetica,Arial,sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: none;
+  font-style: normal;
+  white-space: nowrap;
+}
+
+.c4 {
+  font-family: 'proxima-nova',Helvetica,Arial,sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  text-transform: none;
+  font-style: normal;
+  color: #00b3ec;
+}
+
+.c5 {
+  font-family: 'proxima-nova',Helvetica,Arial,sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: none;
+  font-style: normal;
+}
+
+.c2 {
+  padding: 4px;
+}
+
+.c3 {
+  text-decoration: none;
+}
+
+<div
+    class="c0 Version"
+  >
+    <span
+      class="c1"
+    >
+      product name:
+    </span>
+    <div
+      class="c2"
+    />
+    <a
+      class="c3 Link"
+      href="https://github.com/zazathomas/weave-gitops"
+      rel="noreferrer"
+      target="_blank"
+    >
+      <span
+        class="c4"
+      >
+        <span
+          class="c5"
+        >
+          version text
+        </span>
+      </span>
+    </a>
+  </div>
+</DocumentFragment>
+`;
+
+exports[`Version snapshots renders plain text with version text and without version href 1`] = `
+<DocumentFragment>
+  .c0 {
+  display: flex;
+  flex-direction: row;
+  align-items: start;
+}
+
+.c1 {
+  font-family: 'proxima-nova',Helvetica,Arial,sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: none;
+  font-style: normal;
+  white-space: nowrap;
+}
+
+.c3 {
+  font-family: 'proxima-nova',Helvetica,Arial,sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  text-transform: none;
+  font-style: normal;
+}
+
+.c2 {
+  padding: 4px;
+}
+
+<div
+    class="c0 Version"
+  >
+    <span
+      class="c1"
+    >
+      product name:
+    </span>
+    <div
+      class="c2"
+    />
+    <span
+      class="c3"
+    >
+      version text
+    </span>
+  </div>
+</DocumentFragment>
+`;

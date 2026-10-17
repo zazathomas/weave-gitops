@@ -1,0 +1,369 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`Metadata snapshots renders nothing without data 1`] = `
+<DocumentFragment>
+  .c0 {
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+  gap: 12px;
+  width: 100%;
+}
+
+.c1 {
+  margin: 12px 0;
+}
+
+<div
+    class="c0 c1 Metadata"
+  />
+</DocumentFragment>
+`;
+
+exports[`Metadata snapshots renders with data 1`] = `
+<DocumentFragment>
+  .c0 {
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+  gap: 12px;
+  width: 100%;
+}
+
+.c2 {
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+  gap: 8px;
+}
+
+.c4 {
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+  gap: 8px;
+  width: 100%;
+}
+
+.c5 {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  justify-content: center;
+}
+
+.c10 {
+  display: flex;
+  flex-direction: row;
+  align-items: start;
+  gap: 4px;
+  width: 100%;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+}
+
+.c3 {
+  font-family: 'proxima-nova',Helvetica,Arial,sans-serif;
+  font-size: 20px;
+  font-weight: 400;
+  text-transform: none;
+  font-style: normal;
+  color: #737373;
+}
+
+.c6 {
+  font-family: 'proxima-nova',Helvetica,Arial,sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: none;
+  font-style: normal;
+  color: #737373;
+  min-width: 150px;
+}
+
+.c7 {
+  font-family: 'proxima-nova',Helvetica,Arial,sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  text-transform: none;
+  font-style: normal;
+  color: #1a1a1a;
+}
+
+.c9 {
+  font-family: 'proxima-nova',Helvetica,Arial,sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  text-transform: none;
+  font-style: normal;
+  color: #00b3ec;
+}
+
+.c11 {
+  font-family: 'proxima-nova',Helvetica,Arial,sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  text-transform: none;
+  font-style: normal;
+}
+
+.c8 {
+  text-decoration: none;
+}
+
+.c12 {
+  padding: 8px 12px;
+  border-radius: 15px;
+  white-space: nowrap;
+  background-color: #C2C9D7;
+}
+
+.c1 {
+  margin: 12px 0;
+}
+
+<div
+    class="c0 c1 Metadata"
+  >
+    <div
+      class="c2"
+    >
+      <span
+        class="c3"
+      >
+        Metadata
+      </span>
+      <div
+        class="c4"
+      >
+        <div
+          class="c5"
+          data-testid="Created By"
+        >
+          <span
+            class="c6"
+          >
+            Created By:
+          </span>
+          <span
+            class="c7"
+          >
+            Value 2
+          </span>
+        </div>
+        <div
+          class="c5"
+          data-testid="CreatedBy"
+        >
+          <span
+            class="c6"
+          >
+            CreatedBy:
+          </span>
+          <span
+            class="c7"
+          >
+            Value 3
+          </span>
+        </div>
+        <div
+          class="c5"
+          data-testid="CreatedBy"
+        >
+          <span
+            class="c6"
+          >
+            CreatedBy:
+          </span>
+          <span
+            class="c7"
+          >
+            Value 4
+          </span>
+        </div>
+        <div
+          class="c5"
+          data-testid="Description"
+        >
+          <span
+            class="c6"
+          >
+            Description:
+          </span>
+          <span
+            class="c7"
+          >
+            Value 1
+          </span>
+        </div>
+        <div
+          class="c5"
+          data-testid="Html"
+        >
+          <span
+            class="c6"
+          >
+            Html:
+          </span>
+          <span
+            class="c7"
+          >
+            &lt;p&gt;&lt;b&gt;html&lt;/b&gt;&lt;/p&gt;
+          </span>
+        </div>
+        <div
+          class="c5"
+          data-testid="Link To Google"
+        >
+          <span
+            class="c6"
+          >
+            Link To Google:
+          </span>
+          <span
+            class="c7"
+          >
+            <a
+              class="c8 Link"
+              href="https://google.com"
+              rel="noreferrer"
+              target="_blank"
+            >
+              <span
+                class="c9"
+              >
+                https://google.com
+              </span>
+            </a>
+          </span>
+        </div>
+        <div
+          class="c5"
+          data-testid="Multi Lines"
+        >
+          <span
+            class="c6"
+          >
+            Multi Lines:
+          </span>
+          <span
+            class="c7"
+          >
+            This is first line
+This is second line
+
+          </span>
+        </div>
+        <div
+          class="c5"
+          data-testid="Version"
+        >
+          <span
+            class="c6"
+          >
+            Version:
+          </span>
+          <span
+            class="c7"
+          >
+            some version
+          </span>
+        </div>
+      </div>
+    </div>
+    <div
+      class="c2"
+    >
+      <span
+        class="c3"
+      >
+        Artifact Metadata
+      </span>
+      <div
+        class="c4"
+      >
+        <div
+          class="c5"
+          data-testid="Description"
+        >
+          <span
+            class="c6"
+          >
+            Description:
+          </span>
+          <span
+            class="c7"
+          >
+            Value 1
+          </span>
+        </div>
+        <div
+          class="c5"
+          data-testid="Html"
+        >
+          <span
+            class="c6"
+          >
+            Html:
+          </span>
+          <span
+            class="c7"
+          >
+            &lt;p&gt;&lt;b&gt;html&lt;/b&gt;&lt;/p&gt;
+          </span>
+        </div>
+        <div
+          class="c5"
+          data-testid="Link To Google"
+        >
+          <span
+            class="c6"
+          >
+            Link To Google:
+          </span>
+          <span
+            class="c7"
+          >
+            <a
+              class="c8 Link"
+              href="https://google.com"
+              rel="noreferrer"
+              target="_blank"
+            >
+              <span
+                class="c9"
+              >
+                https://google.com
+              </span>
+            </a>
+          </span>
+        </div>
+      </div>
+    </div>
+    <div
+      class="c2"
+    >
+      <span
+        class="c3"
+      >
+        Labels
+      </span>
+      <div
+        class="c10"
+      >
+        <span
+          class="c11 c12"
+        >
+          label: label
+        </span>
+        <span
+          class="c11 c12"
+        >
+          goose: goose
+        </span>
+      </div>
+    </div>
+  </div>
+</DocumentFragment>
+`;

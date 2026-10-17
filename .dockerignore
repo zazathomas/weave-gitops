@@ -1,0 +1,9 @@
+node_modules
+.parcel-cache
+.deps
+.git
+dist
+pkg/flux/bin/flux
+# Ignore generated credentials from google-github-actions/auth
+gha-creds-*.json
+.yarn/install-state.gz

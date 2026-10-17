@@ -1,0 +1,326 @@
+# CI: lint, test, build. On a v* tag it also publishes the image and chart to GHCR.
+#
+#   PR / push to main : commit + PR title lint, proto, UI, Go, chart, image build (no push)
+#   push of v* tag    : the above, plus multi-arch image push (SBOM, provenance, cosign)
+#                       and Helm chart push to oci://ghcr.io/<repo>/charts (cosign)
+#   workflow_dispatch : same as a branch, with `publish` to run the publish path manually
+#
+# Tag pushes must be created with a PAT (see release.yaml), because a tag pushed with
+# GITHUB_TOKEN does not trigger workflows.
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: "Publish the image and chart for this ref"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE: ghcr.io/${{ github.repository }}/gitops-server
+  CHART_DIR: charts/weave-gitops
+  FLUX_VERSION: "2.9.6"
+
+jobs:
+  lint-commits:
+    name: Commit and PR title lint
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: wagoid/commitlint-github-action@v5
+        with:
+          configFile: ./commitlint.config.mjs
+
+      - name: Validate PR title
+        id: lint_pr_title
+        if: github.event_name == 'pull_request'
+        uses: amannn/action-semantic-pull-request@v6
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Explain PR title failure
+        if: always() && github.event_name == 'pull_request' && steps.lint_pr_title.outputs.error_message != null
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: pr-title-lint-error
+          message: |
+            The PR title has to follow the
+            [Conventional Commits specification](https://www.conventionalcommits.org/en/v1.0.0/),
+            because it becomes the commit message of the squash merge.
+
+            ```
+            ${{ steps.lint_pr_title.outputs.error_message }}
+            ```
+
+      - name: Clear PR title failure
+        if: github.event_name == 'pull_request' && steps.lint_pr_title.outputs.error_message == null
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: pr-title-lint-error
+          delete: true
+
+  proto:
+    name: Protobuf
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Generate and check for drift
+        run: |
+          make proto
+          git diff --no-ext-diff --exit-code
+
+  ui:
+    name: UI
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: yarn
+
+      - name: Install dependencies
+        run: |
+          corepack enable
+          make node_modules
+
+      - name: Lint and typecheck
+        run: make ui-lint
+
+      - name: Audit production dependencies
+        run: make ui-audit
+
+      - name: Test
+        run: make ui-test
+
+  go-lint:
+    name: Go lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Format
+        run: make check-format
+
+      - name: Vet
+        run: make vet
+
+      - name: Lint
+        run: make lint
+
+  go-test:
+    name: Go tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      # The suite shells out to the flux CLI; keep it in step with the Makefile.
+      - uses: fluxcd/flux2/action@4a15fa6a023259353ef750acf1c98fe88407d4d0
+        with:
+          version: ${{ env.FLUX_VERSION }}
+
+      - name: Unit tests (envtest)
+        run: make unit-tests
+
+      - name: Build the server
+        run: make gitops-server
+
+  chart:
+    name: Helm chart
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: azure/setup-helm@v4
+        with:
+          version: v3.17.0
+
+      - name: Lint
+        run: make helm-lint
+
+      - name: Render with defaults
+        run: make helm-template
+
+      - name: Render with every optional feature on
+        run: |
+          helm template weave-gitops "$CHART_DIR" \
+            --set ingress.enabled=true \
+            --set 'ingress.hosts[0].host=gitops.example.com' \
+            --set 'ingress.hosts[0].paths[0].path=/' \
+            --set 'ingress.hosts[0].paths[0].pathType=Prefix' \
+            --set metrics.enabled=true \
+            --set serverTLS.enable=true \
+            --set adminUser.create=true \
+            --set oidcSecret.create=true \
+            --set replicaCount=2 > /dev/null
+
+      - name: Package
+        run: make chart-package
+
+  image:
+    name: Image
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Set build env
+        run: |
+          if [[ "${GITHUB_REF}" == refs/tags/v* ]]; then
+            echo "PUBLISH=true" >> "$GITHUB_ENV"
+            printf 'TAGS=%s:%s\n%s:latest\n' "$IMAGE" "${GITHUB_REF#refs/tags/}" "$IMAGE" >> "$GITHUB_ENV"
+          else
+            echo "PUBLISH=${{ inputs.publish == 'true' }}" >> "$GITHUB_ENV"
+            printf 'TAGS=%s:%s\n' "$IMAGE" "sha-${GITHUB_SHA::7}" >> "$GITHUB_ENV"
+          fi
+          echo "LDFLAGS=$(make echo-ldflags)" >> "$GITHUB_ENV"
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        if: env.PUBLISH == 'true'
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # A branch or PR only proves the Dockerfile still builds; the push, SBOM,
+      # provenance and signing only happen for a release.
+      - name: Build
+        if: env.PUBLISH != 'true'
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: gitops-server.dockerfile
+          build-args: |
+            LDFLAGS=${{ env.LDFLAGS }}
+            GIT_COMMIT=${{ github.sha }}
+          push: false
+          platforms: linux/amd64
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build and push
+        id: build
+        if: env.PUBLISH == 'true'
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: gitops-server.dockerfile
+          build-args: |
+            LDFLAGS=${{ env.LDFLAGS }}
+            GIT_COMMIT=${{ github.sha }}
+          push: true
+          provenance: mode=max
+          sbom: true
+          platforms: linux/amd64,linux/arm64
+          tags: ${{ env.TAGS }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - uses: sigstore/cosign-installer@v4
+        if: env.PUBLISH == 'true'
+
+      - name: Sign
+        if: env.PUBLISH == 'true'
+        run: cosign sign --yes "${{ env.IMAGE }}@${{ steps.build.outputs.digest }}"
+
+      - name: Verify the signature
+        if: env.PUBLISH == 'true'
+        run: |
+          cosign verify "${{ env.IMAGE }}@${{ steps.build.outputs.digest }}" \
+            --certificate-identity "https://github.com/${{ github.workflow_ref }}" \
+            --certificate-oidc-issuer "https://token.actions.githubusercontent.com"
+
+  chart-publish:
+    name: Chart publish
+    needs: [chart]
+    if: startsWith(github.ref, 'refs/tags/v') || inputs.publish
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: azure/setup-helm@v4
+        with:
+          version: v3.17.0
+
+      - name: Log in to GHCR
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" \
+            | helm registry login "${{ env.REGISTRY }}" --username "${{ github.actor }}" --password-stdin
+
+      - name: Push
+        id: push
+        run: |
+          helm package "$CHART_DIR" -d dist
+          helm push dist/weave-gitops-*.tgz "oci://${{ env.REGISTRY }}/${{ github.repository }}/charts" \
+            2>&1 | tee push.log
+          digest=$(awk '/Digest: /{print $2}' push.log)
+          [ -n "$digest" ] || { echo "could not read the digest from helm push"; cat push.log; exit 1; }
+          echo "digest=$digest" >> "$GITHUB_OUTPUT"
+
+      - uses: sigstore/cosign-installer@v4
+
+      - name: Sign
+        run: |
+          cosign sign --yes \
+            "${{ env.REGISTRY }}/${{ github.repository }}/charts/weave-gitops@${{ steps.push.outputs.digest }}"
+
+      - name: Verify the signature
+        run: |
+          cosign verify \
+            "${{ env.REGISTRY }}/${{ github.repository }}/charts/weave-gitops@${{ steps.push.outputs.digest }}" \
+            --certificate-identity "https://github.com/${{ github.workflow_ref }}" \
+            --certificate-oidc-issuer "https://token.actions.githubusercontent.com"

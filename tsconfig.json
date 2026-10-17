@@ -1,0 +1,16 @@
+{
+    "compilerOptions": {
+        "esModuleInterop": true,
+        "jsx": "react",
+        "resolveJsonModule": true,
+        "skipLibCheck": true,
+        "target": "ES2018",
+        "module": "CommonJS",
+    },
+    "include": [
+        "ui/**/*"
+    ],
+    "exclude": [
+        "node_modules"
+    ]
+}

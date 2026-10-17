@@ -1,0 +1,38 @@
+# Editor / OS
+*~
+*.iml
+/.idea
+.vscode
+.DS_Store
+
+# Build output
+bin/
+dist/
+*.out
+*.test
+ginkgo.report
+coverage
+coverage.txt
+
+# Node / UI
+node_modules/
+.parcel-cache/
+.cache/
+.pnp.*
+*.log
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# Local environment and secrets
+.env
+.env.local
+.env.*.local
+localhost-key.pem
+localhost.pem
+
+# Agent / workflow scratch state
+.agentic/
+release-body.md
