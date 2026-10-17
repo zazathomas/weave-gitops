@@ -72,7 +72,7 @@ function SubRouterTabs({ className, children, rootPath, clearQuery }: Props) {
     <Flex wide tall column start className={className} gap="12">
       <Tabs
         indicatorColor="primary"
-        value={routesToIndex(routes, location.pathname)}
+        value={routes[routesToIndex(routes, location.pathname)]?.path}
         className="horizontal-tabs"
       >
         {_.map(routes, (route, i) => {
@@ -80,6 +80,7 @@ function SubRouterTabs({ className, children, rootPath, clearQuery }: Props) {
             <MuiTab
               component={ForwardedLink as typeof Link}
               key={i}
+              value={route.path}
               to={formatURL(`../${route.path}`, query)}
               active={location.pathname.includes(route.path)}
               text={route.name}

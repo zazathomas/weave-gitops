@@ -7,3 +7,5 @@ pkg/flux/bin/flux
 # Ignore generated credentials from google-github-actions/auth
 gha-creds-*.json
 .yarn/install-state.gz
+# Agent workflow scratch state (snapshots of the source tree)
+.agentic

@@ -1,5 +1,11 @@
 version: v2
-name: buf.build/weaveworks/wego
+# The agent workflow materialises source copies under .agentic/, which contain
+# duplicates of api/core/*.proto and make buf fail with "symbol already defined".
+modules:
+  - path: .
+    name: buf.build/weaveworks/wego
+    excludes:
+      - .agentic
 deps:
   - buf.build/googleapis/googleapis
   - buf.build/grpc-ecosystem/grpc-gateway

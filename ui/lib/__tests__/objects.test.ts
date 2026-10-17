@@ -542,7 +542,10 @@ describe("new Flux CRD object models", () => {
 
     const both = new HelmRelease({
       payload: JSON.stringify({
-        status: { lastAppliedRevision: "6.4.0", lastAttemptedRevision: "6.5.0" },
+        status: {
+          lastAppliedRevision: "6.4.0",
+          lastAttemptedRevision: "6.5.0",
+        },
       }),
     });
     expect(both.lastAppliedRevision).toEqual("6.4.0");

@@ -1,9 +1,20 @@
 # CI: lint, test, build. On a v* tag it also publishes the image and chart to GHCR.
 #
-#   PR / push to main : commit + PR title lint, proto, UI, Go, chart, image build (no push)
-#   push of v* tag    : the above, plus multi-arch image push (SBOM, provenance, cosign)
-#                       and Helm chart push to oci://ghcr.io/<repo>/charts (cosign)
+#   PR / push to main : proto, UI, Go, chart, versions, image build (no push)
+#   push of v* tag    : the above, plus multi-arch image push (SBOM, provenance, cosign),
+#                       Helm chart push to oci://ghcr.io/<repo>/charts (cosign),
+#                       a smoke test of the published artifacts, and the GitHub
+#                       release itself. Publishing waits on the test jobs, so a
+#                       failing test suite cannot produce a release.
 #   workflow_dispatch : same as a branch, with `publish` to run the publish path manually
+#
+# Rebuild an existing release without moving its tag:
+#
+#   gh workflow run ci.yaml --ref v0.40.0
+#
+# That re-runs the publish path against the tag, so the OIDC identity stays
+# "ci.yaml@refs/tags/v0.40.0" and the signatures still verify for consumers.
+# Moving a tag instead leaves the GitHub release orphaned and re-drafted.
 #
 # Tag pushes must be created with a PAT (see release.yaml), because a tag pushed with
 # GITHUB_TOKEN does not trigger workflows.
@@ -25,7 +36,6 @@ on:
 
 permissions:
   contents: read
-  pull-requests: read
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -34,60 +44,56 @@ concurrency:
 env:
   REGISTRY: ghcr.io
   IMAGE: ghcr.io/${{ github.repository }}/gitops-server
+  CHART: ghcr.io/${{ github.repository }}/charts/weave-gitops
   CHART_DIR: charts/weave-gitops
   FLUX_VERSION: "2.9.6"
 
 jobs:
-  lint-commits:
-    name: Commit and PR title lint
+  workflows:
+    name: Workflows
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      pull-requests: write
     steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+      - uses: actions/checkout@v7
 
-      - uses: wagoid/commitlint-github-action@v5
+      - uses: actions/setup-go@v7
         with:
-          configFile: ./commitlint.config.mjs
+          go-version-file: go.mod
+          cache: true
 
-      - name: Validate PR title
-        id: lint_pr_title
-        if: github.event_name == 'pull_request'
-        uses: amannn/action-semantic-pull-request@v6
+      # shellcheck is preinstalled on the runner, so actionlint checks the run:
+      # blocks too. This is what catches quoting and $GITHUB_ENV format mistakes
+      # before a release run discovers them 25 minutes in.
+      - name: Install actionlint
+        run: go install github.com/rhysd/actionlint/cmd/actionlint@v1.7.7
+
+      - name: Lint workflows
+        run: |
+          "$(go env GOPATH)/bin/actionlint" -color
+
+  versions:
+    name: Versions
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Test the release tooling
+        run: python3 -m unittest discover -s hack/release -p 'test_*.py' -v
+
+      # Fails fast when Chart.yaml, appVersion, package.json and the tag
+      # disagree, instead of letting the release job report "nothing to
+      # release" after the fact.
+      - name: Check the version files agree
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Explain PR title failure
-        if: always() && github.event_name == 'pull_request' && steps.lint_pr_title.outputs.error_message != null
-        uses: marocchino/sticky-pull-request-comment@v2
-        with:
-          header: pr-title-lint-error
-          message: |
-            The PR title has to follow the
-            [Conventional Commits specification](https://www.conventionalcommits.org/en/v1.0.0/),
-            because it becomes the commit message of the squash merge.
-
-            ```
-            ${{ steps.lint_pr_title.outputs.error_message }}
-            ```
-
-      - name: Clear PR title failure
-        if: github.event_name == 'pull_request' && steps.lint_pr_title.outputs.error_message == null
-        uses: marocchino/sticky-pull-request-comment@v2
-        with:
-          header: pr-title-lint-error
-          delete: true
+          TAG: ${{ github.ref_type == 'tag' && github.ref_name || '' }}
+        run: python3 hack/release/version.py check --tag "$TAG"
 
   proto:
     name: Protobuf
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v7
         with:
           go-version-file: go.mod
           cache: true
@@ -101,9 +107,9 @@ jobs:
     name: UI
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
           cache: yarn
@@ -126,9 +132,9 @@ jobs:
     name: Go lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v7
         with:
           go-version-file: go.mod
           cache: true
@@ -146,15 +152,15 @@ jobs:
     name: Go tests
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v7
         with:
           go-version-file: go.mod
           cache: true
 
       # The suite shells out to the flux CLI; keep it in step with the Makefile.
-      - uses: fluxcd/flux2/action@4a15fa6a023259353ef750acf1c98fe88407d4d0
+      - uses: fluxcd/flux2/action@b9c17924adb533d3617ec7de97a7b0f4acc07b39
         with:
           version: ${{ env.FLUX_VERSION }}
 
@@ -168,9 +174,9 @@ jobs:
     name: Helm chart
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: azure/setup-helm@v4
+      - uses: azure/setup-helm@v5
         with:
           version: v3.17.0
 
@@ -182,6 +188,7 @@ jobs:
 
       - name: Render with every optional feature on
         run: |
+          # shellcheck disable=SC2016 # the bcrypt hash must stay literal
           helm template weave-gitops "$CHART_DIR" \
             --set ingress.enabled=true \
             --set 'ingress.hosts[0].host=gitops.example.com' \
@@ -190,7 +197,12 @@ jobs:
             --set metrics.enabled=true \
             --set serverTLS.enable=true \
             --set adminUser.create=true \
+            --set 'adminUser.passwordHash=$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy' \
             --set oidcSecret.create=true \
+            --set oidcSecret.clientID=gitops-client \
+            --set oidcSecret.clientSecret=gitops-secret \
+            --set oidcSecret.issuerURL=https://issuer.example.com \
+            --set oidcSecret.redirectURL=https://gitops.example.com/oauth2/callback \
             --set replicaCount=2 > /dev/null
 
       - name: Package
@@ -198,35 +210,68 @@ jobs:
 
   image:
     name: Image
+    # Publishing must not outrun the test suite: without these needs a tag build
+    # would push (and move :latest) even when the Go tests fail.
+    needs: [proto, ui, go-lint, go-test, versions]
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
       id-token: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v7
         with:
           go-version-file: go.mod
           cache: true
 
+      # Multi-line values must use the KEY<<DELIM form: a bare second line in
+      # $GITHUB_ENV makes the runner reject the whole file ("Invalid format"),
+      # which silently drops PUBLISH/TAGS/LDFLAGS and skips every publish step.
       - name: Set build env
+        env:
+          # Expressions in `run:` are substituted before bash sees them, so keep
+          # them in env instead; shellcheck reads the leftovers literally.
+          DISPATCH_PUBLISH: ${{ inputs.publish || 'false' }}
         run: |
+          version=""
           if [[ "${GITHUB_REF}" == refs/tags/v* ]]; then
             echo "PUBLISH=true" >> "$GITHUB_ENV"
-            printf 'TAGS=%s:%s\n%s:latest\n' "$IMAGE" "${GITHUB_REF#refs/tags/}" "$IMAGE" >> "$GITHUB_ENV"
+            {
+              echo 'TAGS<<EOF'
+              echo "$IMAGE:${GITHUB_REF#refs/tags/}"
+              # A prerelease must not take over :latest -- v0.39.1-rc.1 would
+              # otherwise repoint the tag that "install the latest" follows.
+              if [[ "${GITHUB_REF#refs/tags/}" != *-* ]]; then
+                echo "$IMAGE:latest"
+              fi
+              echo 'EOF'
+            } >> "$GITHUB_ENV"
+            version="${GITHUB_REF#refs/tags/}"
           else
-            echo "PUBLISH=${{ inputs.publish == 'true' }}" >> "$GITHUB_ENV"
-            printf 'TAGS=%s:%s\n' "$IMAGE" "sha-${GITHUB_SHA::7}" >> "$GITHUB_ENV"
+            echo "PUBLISH=$DISPATCH_PUBLISH" >> "$GITHUB_ENV"
+            echo "TAGS=$IMAGE:sha-${GITHUB_SHA::7}" >> "$GITHUB_ENV"
           fi
-          echo "LDFLAGS=$(make echo-ldflags)" >> "$GITHUB_ENV"
+          # A tag checkout is a shallow, single-ref fetch, so the Makefile's
+          # `git describe --match "v*"` finds no tags and falls back to the
+          # commit sha. Pass the tag through so the binary reports its release
+          # instead of 4f0ec01.
+          {
+            echo 'LDFLAGS<<EOF'
+            if [[ -n "$version" ]]; then
+              make -s echo-ldflags VERSION="$version"
+            else
+              make -s echo-ldflags
+            fi
+            echo 'EOF'
+          } >> "$GITHUB_ENV"
 
-      - uses: docker/setup-buildx-action@v3
+      - uses: docker/setup-buildx-action@v4
 
       - name: Log in to GHCR
         if: env.PUBLISH == 'true'
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
@@ -236,7 +281,7 @@ jobs:
       # provenance and signing only happen for a release.
       - name: Build
         if: env.PUBLISH != 'true'
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v7
         with:
           context: .
           file: gitops-server.dockerfile
@@ -251,7 +296,7 @@ jobs:
       - name: Build and push
         id: build
         if: env.PUBLISH == 'true'
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v7
         with:
           context: .
           file: gitops-server.dockerfile
@@ -266,8 +311,19 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - uses: sigstore/cosign-installer@v4
+      - uses: sigstore/cosign-installer@v3
         if: env.PUBLISH == 'true'
+
+      # The Makefile derives VERSION from `git describe`, which needs the tag.
+      # A tag checkout is shallow, so a release would silently label itself with
+      # the commit sha (as v0.40.0 did before it was rebuilt).
+      - name: Check the binary was stamped with the release version
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          case "$LDFLAGS" in
+            *"core/server.Version=v${GITHUB_REF#refs/tags/v}"*) echo "stamped with v${GITHUB_REF#refs/tags/v}" ;;
+            *) echo "LDFLAGS do not stamp the tag version: $LDFLAGS"; exit 1 ;;
+          esac
 
       - name: Sign
         if: env.PUBLISH == 'true'
@@ -282,7 +338,9 @@ jobs:
 
   chart-publish:
     name: Chart publish
-    needs: [chart]
+    # Waiting on the image keeps the chart from being installable before the
+    # image it points at exists (upstream called this "release locking").
+    needs: [chart, image]
     if: startsWith(github.ref, 'refs/tags/v') || inputs.publish
     runs-on: ubuntu-latest
     permissions:
@@ -290,16 +348,23 @@ jobs:
       packages: write
       id-token: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: azure/setup-helm@v4
+      - uses: azure/setup-helm@v5
         with:
           version: v3.17.0
 
+      # A docker-style login writes ~/.docker/config.json, which helm push and
+      # cosign sign both read. The helm registry login it replaces only wrote
+      # ~/.config/helm/registry/config.json, which cosign ignores, so the
+      # signature push failed with "UNAUTHORIZED: unauthenticated" after a
+      # successful chart push.
       - name: Log in to GHCR
-        run: |
-          echo "${{ secrets.GITHUB_TOKEN }}" \
-            | helm registry login "${{ env.REGISTRY }}" --username "${{ github.actor }}" --password-stdin
+        uses: docker/login-action@v4
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Push
         id: push
@@ -311,7 +376,7 @@ jobs:
           [ -n "$digest" ] || { echo "could not read the digest from helm push"; cat push.log; exit 1; }
           echo "digest=$digest" >> "$GITHUB_OUTPUT"
 
-      - uses: sigstore/cosign-installer@v4
+      - uses: sigstore/cosign-installer@v3
 
       - name: Sign
         run: |
@@ -324,3 +389,122 @@ jobs:
             "${{ env.REGISTRY }}/${{ github.repository }}/charts/weave-gitops@${{ steps.push.outputs.digest }}" \
             --certificate-identity "https://github.com/${{ github.workflow_ref }}" \
             --certificate-oidc-issuer "https://token.actions.githubusercontent.com"
+
+  # Publishes happen without anyone looking at the result: the tag build is
+  # green as soon as the push succeeds. These checks read the artifacts back out
+  # of the registry, which is how a release ends up labelled with the wrong
+  # version or signed with a signature nobody can verify.
+  verify-release:
+    name: Verify release
+    needs: [image, chart-publish]
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+    steps:
+      - uses: actions/checkout@v7
+
+      # Pulling anonymously works only while the packages are public. Logging in
+      # makes the check independent of the package visibility setting.
+      - name: Log in to GHCR
+        uses: docker/login-action@v4
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: azure/setup-helm@v5
+        with:
+          version: v3.17.0
+
+      - uses: sigstore/cosign-installer@v3
+
+      - name: Pull the published image
+        env:
+          VERSION: ${{ github.ref_name }}
+        run: |
+          docker pull "$IMAGE:$VERSION"
+          cid=$(docker create "$IMAGE:$VERSION")
+          docker cp "$cid:/gitops-server" /tmp/gitops-server
+          docker rm "$cid" > /dev/null
+
+      - name: The binary reports the release version
+        env:
+          VERSION: ${{ github.ref_name }}
+        run: |
+          if ! strings /tmp/gitops-server | grep -qx "$VERSION"; then
+            echo "the binary does not carry $VERSION; version-like strings found:"
+            strings /tmp/gitops-server | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+' | sort -u | head
+            exit 1
+          fi
+          echo "binary reports $VERSION"
+
+      - name: The chart metadata matches the tag
+        env:
+          VERSION: ${{ github.ref_name }}
+        run: |
+          metadata=$(helm show chart "oci://$CHART" --version "${VERSION#v}")
+          echo "$metadata"
+          echo "$metadata" | grep -qx "version: ${VERSION#v}"
+          # helm prints Chart.yaml as written, but tolerate the quotes being
+          # dropped by a future metadata serialisation.
+          echo "$metadata" | grep -Eq "^appVersion: \"?${VERSION}\"?$"
+
+      - name: Latest points at this release
+        env:
+          VERSION: ${{ github.ref_name }}
+        run: |
+          if [[ "$VERSION" == *-* ]]; then
+            echo "$VERSION is a prerelease, :latest is left alone"
+            exit 0
+          fi
+          tagged=$(docker buildx imagetools inspect "$IMAGE:$VERSION" --format '{{.Manifest.Digest}}')
+          latest=$(docker buildx imagetools inspect "$IMAGE:latest" --format '{{.Manifest.Digest}}')
+          [ "$tagged" = "$latest" ] || {
+            echo ":latest ($latest) is not $VERSION ($tagged)"
+            exit 1
+          }
+
+      - name: Both signatures verify against this workflow
+        env:
+          VERSION: ${{ github.ref_name }}
+        run: |
+          for ref in "$IMAGE:$VERSION" "$CHART:${VERSION#v}"; do
+            cosign verify "$ref" \
+              --certificate-identity "https://github.com/${{ github.workflow_ref }}" \
+              --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
+              > /dev/null
+            echo "verified $ref"
+          done
+
+  # Created last, on purpose: a release page should never exist for a version
+  # whose image failed to build. Re-running a tag build (or a rebuild dispatch)
+  # finds the release and republishes it instead of failing.
+  release:
+    name: GitHub release
+    needs: [verify-release]
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Create or republish the release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ github.ref_name }}
+        run: |
+          if gh release view "$VERSION" > /dev/null 2>&1; then
+            echo "release $VERSION already exists, making sure it is published"
+            # Deleting a tag re-drafts its release, which is why a rebuild has to
+            # do this rather than assume the page is live.
+            gh release edit "$VERSION" --draft=false
+          else
+            # --verify-tag keeps gh from creating the tag through the API, which
+            # would not trigger any workflow.
+            gh release create "$VERSION" --generate-notes --title "$VERSION" --verify-tag
+          fi

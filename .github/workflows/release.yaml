@@ -1,10 +1,16 @@
-# Release: bump the version, commit, tag, push and create a GitHub release.
+# Release: bump the version, commit, tag, push.
 #
-# The tag push triggers ci.yaml, which builds and publishes the image and chart to GHCR.
-# That needs a PAT: a tag pushed with GITHUB_TOKEN does not trigger workflows.
+# The tag push triggers ci.yaml, which builds and publishes the image and chart
+# to GHCR and only then creates the GitHub release. Nothing in this workflow
+# publishes artifacts, so a failed build can no longer leave a release page
+# with no image behind it.
 #
-# Required secret:
+# That tag push needs a PAT: a tag pushed with GITHUB_TOKEN does not trigger
+# workflows. Required secret:
 #   REPO_PAT: a PAT (or GitHub App token) with write access to this repository.
+#
+# Re-running this workflow is safe: an existing tag is left alone, and a version
+# already in the tree is tagged without an empty commit.
 
 name: Release
 
@@ -33,12 +39,21 @@ on:
 permissions:
   contents: write
 
+# Never run two releases at once; a half-finished bump would race on the tag.
+concurrency:
+  group: release-${{ inputs.branch }}
+  cancel-in-progress: false
+
 jobs:
   release:
-    name: Bump, tag and release
+    name: Bump, tag and push
     runs-on: ubuntu-latest
+    env:
+      BUMP: ${{ inputs.bump }}
+      EXPLICIT: ${{ inputs.version }}
+      BRANCH: ${{ inputs.branch }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: ${{ inputs.branch }}
           token: ${{ secrets.REPO_PAT }}
@@ -46,35 +61,8 @@ jobs:
 
       - name: Work out the next version
         id: version
-        env:
-          BUMP: ${{ inputs.bump }}
-          EXPLICIT: ${{ inputs.version }}
         run: |
-          current=$(python3 -c "
-          import re, sys
-          print(re.search(r'^version:\s*(\S+)$', open('charts/weave-gitops/Chart.yaml').read(), re.M).group(1))
-          ")
-          echo "current: $current"
-
-          next=$(python3 - "$current" "$BUMP" "$EXPLICIT" <<'EOF'
-          import re, sys
-          current, bump, explicit = sys.argv[1], sys.argv[2], sys.argv[3].strip()
-          if explicit:
-              print(explicit.lstrip("v"))
-              sys.exit(0)
-          m = re.fullmatch(r"(\d+)\.(\d+)\.(\d+)(?:-.*)?", current)
-          if not m:
-              sys.exit(f"cannot bump non-semver version {current!r}")
-          major, minor, patch = (int(g) for g in m.groups())
-          if bump == "major":
-              major, minor, patch = major + 1, 0, 0
-          elif bump == "minor":
-              minor, patch = minor + 1, 0
-          else:
-              patch += 1
-          print(f"{major}.{minor}.{patch}")
-          EOF
-          )
+          next=$(python3 hack/release/version.py next --bump "$BUMP" --explicit "$EXPLICIT")
           echo "next: $next"
           echo "next=$next" >> "$GITHUB_OUTPUT"
 
@@ -82,42 +70,36 @@ jobs:
         env:
           NEXT: ${{ steps.version.outputs.next }}
         run: |
-          python3 - <<'EOF'
-          import json, os, re
-
-          version = os.environ["NEXT"]
-
-          chart_path = "charts/weave-gitops/Chart.yaml"
-          chart = open(chart_path).read()
-          chart = re.sub(r"^version: .*$", f"version: {version}", chart, count=1, flags=re.M)
-          chart = re.sub(r'^appVersion: .*$', f'appVersion: "v{version}"', chart, count=1, flags=re.M)
-          open(chart_path, "w").write(chart)
-
-          pkg_path = "package.json"
-          pkg = json.load(open(pkg_path))
-          pkg["version"] = version
-          open(pkg_path, "w").write(json.dumps(pkg, indent=2) + "\n")
-          EOF
+          python3 hack/release/version.py apply --version "$NEXT"
           git --no-pager diff --stat
 
       - name: Commit, tag and push
         env:
           NEXT: ${{ steps.version.outputs.next }}
         run: |
-          if git diff --quiet; then
-            echo "nothing to release, the version is already $NEXT"
-            exit 1
-          fi
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add charts/weave-gitops/Chart.yaml package.json
-          git commit -m "chore(release): v$NEXT"
-          git tag "v$NEXT"
-          git push origin "HEAD:${{ inputs.branch }}"
-          git push origin "v$NEXT"
 
-      - name: Create the GitHub release
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NEXT: ${{ steps.version.outputs.next }}
-        run: gh release create "v$NEXT" --generate-notes --title "v$NEXT"
+          if git ls-remote --exit-code --tags origin "v$NEXT" > /dev/null 2>&1; then
+            echo "v$NEXT is already tagged; nothing to do"
+            exit 0
+          fi
+
+          # The version files can already carry NEXT -- that is what happens when
+          # a release is cut from a branch where the version was set by hand, or
+          # when this workflow is re-run after a failed publish. Tagging the
+          # current commit is then the whole job; exiting here with an error used
+          # to dead-end the release with "nothing to release".
+          # Scoped to the files this step commits: an unrelated dirty file in
+          # the checkout must not send us down the commit path, where an empty
+          # `git commit` aborts the job under `bash -e`.
+          if git diff --quiet -- charts/weave-gitops/Chart.yaml package.json; then
+            echo "version files already at $NEXT, tagging the current commit"
+          else
+            git add charts/weave-gitops/Chart.yaml package.json
+            git commit -m "chore(release): v$NEXT"
+            git push origin "HEAD:$BRANCH"
+          fi
+
+          git tag "v$NEXT"
+          git push origin "v$NEXT"

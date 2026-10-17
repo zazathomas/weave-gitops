@@ -41,7 +41,7 @@ const Link = React.forwardRef<HTMLAnchorElement, Props>(function Link(
     onMouseLeave,
     ...props
   },
-  ref
+  ref,
 ) {
   if ((href && !isAllowedLink(href)) || (!href && !to)) {
     return (

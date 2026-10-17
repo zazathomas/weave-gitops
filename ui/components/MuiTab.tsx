@@ -10,6 +10,7 @@ type Props = {
   key?: number;
   to?: string;
   text: string;
+  value?: string;
   onClick?: any;
 };
 
@@ -20,6 +21,7 @@ function MuiTab({
   key,
   to,
   text,
+  value,
   onClick,
 }: Props) {
   return (
@@ -28,6 +30,7 @@ function MuiTab({
       component={component}
       key={key}
       to={to}
+      value={value}
       onClick={onClick}
       label={
         <Text

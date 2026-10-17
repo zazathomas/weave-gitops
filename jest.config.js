@@ -40,6 +40,10 @@ const config = {
   },
   transformIgnorePatterns: [`/node_modules/(?:${transformIgnorePatterns})/`],
   setupFilesAfterEnv: ["<rootDir>/setup-jest.ts"],
+  // All suites live under ui/. Pinning the roots keeps jest from walking (and
+  // re-running) copies of those suites that land in scratch trees like
+  // .agentic/, bin/ or dist/, which made `yarn test` pick up duplicates.
+  roots: ["<rootDir>/ui"],
   modulePathIgnorePatterns: ["<rootDir>/dist/"],
   testEnvironment: "jsdom",
   testEnvironmentOptions: {

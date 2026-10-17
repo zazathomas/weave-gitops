@@ -13,8 +13,7 @@ CHART_VERSION=$(shell which yq > /dev/null && yq e '.version' charts/weave-gitop
 # Go build args
 GOOS=$(shell which go > /dev/null && go env GOOS)
 GOARCH=$(shell which go > /dev/null && go env GOARCH)
-LDFLAGS?=-X github.com/zazathomas/weave-gitops/pkg/version.FluxVersion=$(FLUX_VERSION) \
-				 -X github.com/zazathomas/weave-gitops/core/server.Branch=$(BRANCH) \
+LDFLAGS?=-X github.com/zazathomas/weave-gitops/core/server.Branch=$(BRANCH) \
 				 -X github.com/zazathomas/weave-gitops/core/server.Buildtime=$(BUILD_TIME) \
 				 -X github.com/zazathomas/weave-gitops/core/server.GitCommit=$(GIT_COMMIT) \
 				 -X github.com/zazathomas/weave-gitops/core/server.Version=$(VERSION)
