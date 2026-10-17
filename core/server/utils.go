@@ -4,7 +4,7 @@ import (
 	v1 "k8s.io/api/core/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	api "github.com/weaveworks/weave-gitops/pkg/api/core"
+	api "github.com/zazathomas/weave-gitops/pkg/api/core"
 )
 
 func getMatchingLabels(appName string) client.MatchingLabels {
@@ -22,7 +22,7 @@ func GetTenant(namespace, clusterName string, clusterUserNamespaces map[string][
 }
 
 func GetClusterUserNamespacesNames(clusterUserNamespaces map[string][]v1.Namespace) []*api.ClusterNamespaceList {
-	clusterNamespaces := []*api.ClusterNamespaceList{}
+	clusterNamespaces := make([]*api.ClusterNamespaceList, 0, len(clusterUserNamespaces))
 
 	for clusterName, namespaces := range clusterUserNamespaces {
 		namespaceNames := []string{}

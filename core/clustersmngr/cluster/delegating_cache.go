@@ -16,7 +16,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/apiutil"
 
-	"github.com/weaveworks/weave-gitops/pkg/server/auth"
+	"github.com/zazathomas/weave-gitops/pkg/server/auth"
 )
 
 type delegatingCacheCluster struct {

@@ -3,7 +3,7 @@ package server
 import (
 	"context"
 
-	pb "github.com/weaveworks/weave-gitops/pkg/api/core"
+	pb "github.com/zazathomas/weave-gitops/pkg/api/core"
 )
 
 // IsCRDAvailable returns with a hashmap where the keys are the names of

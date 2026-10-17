@@ -1,8 +1,8 @@
 package server
 
 import (
-	"github.com/weaveworks/weave-gitops/pkg/kube"
-	"github.com/weaveworks/weave-gitops/pkg/services/crd"
+	"github.com/zazathomas/weave-gitops/pkg/kube"
+	"github.com/zazathomas/weave-gitops/pkg/services/crd"
 )
 
 // ApplicationsOptions includes all the options that can be set for an

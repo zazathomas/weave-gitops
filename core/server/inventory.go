@@ -24,10 +24,10 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/apiutil"
 
-	"github.com/weaveworks/weave-gitops/core/server/types"
-	pb "github.com/weaveworks/weave-gitops/pkg/api/core"
-	"github.com/weaveworks/weave-gitops/pkg/health"
-	"github.com/weaveworks/weave-gitops/pkg/server/auth"
+	"github.com/zazathomas/weave-gitops/core/server/types"
+	pb "github.com/zazathomas/weave-gitops/pkg/api/core"
+	"github.com/zazathomas/weave-gitops/pkg/health"
+	"github.com/zazathomas/weave-gitops/pkg/server/auth"
 )
 
 // ObjectWithChildren is a recursive data structure containing a tree of Unstructured
@@ -59,7 +59,7 @@ func (cs *coreServer) GetInventory(ctx context.Context, msg *pb.GetInventoryRequ
 			return nil, fmt.Errorf("failed getting kustomization inventory: %w", err)
 		}
 	case helmv2.HelmReleaseKind:
-		hr, err := cs.getHelmRelease(ctx, client, msg.Name, msg.Namespace)
+		hr, err := cs.getHelmRelease(ctx, client, msg.ClusterName, msg.Name, msg.Namespace)
 		if err != nil {
 			return nil, fmt.Errorf("failed getting Helm Release for inventory: %w", err)
 		}
@@ -73,7 +73,7 @@ func (cs *coreServer) GetInventory(ctx context.Context, msg *pb.GetInventoryRequ
 		if err != nil {
 			return nil, err
 		}
-		inventoryRefs, err = getFluxLikeInventory(ctx, client, msg.Name, msg.Namespace, *gvk)
+		inventoryRefs, err = getFluxLikeInventory(ctx, client, msg.Name, msg.Namespace, cs.servedGVK(ctx, msg.ClusterName, *gvk))
 		if err != nil {
 			return nil, fmt.Errorf("failed getting flux like inventory: %w", err)
 		}
@@ -129,7 +129,8 @@ func (cs *coreServer) getKustomizationInventory(ctx context.Context, k8sClient c
 	return objects, nil
 }
 
-func (cs *coreServer) getHelmRelease(ctx context.Context, k8sClient client.Client, name, namespace string) (*helmv2.HelmRelease, error) {
+func (cs *coreServer) getHelmRelease(ctx context.Context, k8sClient client.Client, clusterName, name, namespace string) (*helmv2.HelmRelease, error) {
+	key := client.ObjectKey{Name: name, Namespace: namespace}
 	release := &helmv2.HelmRelease{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      name,
@@ -137,7 +138,25 @@ func (cs *coreServer) getHelmRelease(ctx context.Context, k8sClient client.Clien
 		},
 	}
 
-	if err := k8sClient.Get(ctx, client.ObjectKeyFromObject(release), release); err != nil {
+	// Older clusters serve HelmRelease as v2beta1. Read whatever version the
+	// cluster has and convert it, so inventory keeps working there.
+	gvk := cs.servedGVK(ctx, clusterName, helmv2.GroupVersion.WithKind(helmv2.HelmReleaseKind))
+	if gvk.Version != helmv2.GroupVersion.Version {
+		obj := &unstructured.Unstructured{}
+		obj.SetGroupVersionKind(gvk)
+
+		if err := k8sClient.Get(ctx, key, obj); err != nil {
+			return nil, fmt.Errorf("failed to get helm release: %w", err)
+		}
+
+		if err := runtime.DefaultUnstructuredConverter.FromUnstructured(obj.Object, release); err != nil {
+			return nil, fmt.Errorf("failed to convert helm release from %s: %w", gvk.Version, err)
+		}
+
+		return release, nil
+	}
+
+	if err := k8sClient.Get(ctx, key, release); err != nil {
 		return nil, fmt.Errorf("failed to get helm release: %w", err)
 	}
 

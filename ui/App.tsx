@@ -46,8 +46,10 @@ import { V2Routes } from "./lib/types";
 import { getBasePath } from "./lib/utils";
 import Error from "./pages/Error";
 import SignIn from "./pages/SignIn";
+import ArtifactGeneratorDetail from "./pages/v2/ArtifactGeneratorDetail";
 import Automations from "./pages/v2/Automations";
 import BucketDetail from "./pages/v2/BucketDetail";
+import ExternalArtifactDetail from "./pages/v2/ExternalArtifactDetail";
 import FluxRuntime from "./pages/v2/FluxRuntime";
 import GitRepositoryDetail from "./pages/v2/GitRepositoryDetail";
 import HelmChartDetail from "./pages/v2/HelmChartDetail";
@@ -60,6 +62,7 @@ import OCIRepositoryPage from "./pages/v2/OCIRepositoryPage";
 import PoliciesList from "./pages/v2/PoliciesList";
 import PolicyDetailsPage from "./pages/v2/PolicyDetailsPage";
 import ProviderPage from "./pages/v2/ProviderPage";
+import ReceiverDetail from "./pages/v2/ReceiverDetail";
 import Runtime from "./pages/v2/Runtime";
 import Sources from "./pages/v2/Sources";
 import UserInfo from "./pages/v2/UserInfo";
@@ -256,6 +259,20 @@ const App = () => {
               path="*"
             />
           </Route>
+          <Route path={V2Routes.ExternalArtifact}>
+            <Route
+              element={<WithSearchParams component={ExternalArtifactDetail} />}
+              index
+              path="*"
+            />
+          </Route>
+          <Route path={V2Routes.ArtifactGenerator}>
+            <Route
+              element={<WithSearchParams component={ArtifactGeneratorDetail} />}
+              index
+              path="*"
+            />
+          </Route>
           <Route path={V2Routes.Notifications}>
             <Route
               element={<WithSearchParams component={Notifications} />}
@@ -266,6 +283,13 @@ const App = () => {
           <Route path={V2Routes.Provider}>
             <Route
               element={<WithSearchParams component={ProviderPage} />}
+              index
+              path="*"
+            />
+          </Route>
+          <Route path={V2Routes.Receiver}>
+            <Route
+              element={<WithSearchParams component={ReceiverDetail} />}
               index
               path="*"
             />

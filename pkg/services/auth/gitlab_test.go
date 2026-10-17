@@ -11,9 +11,9 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	"github.com/weaveworks/weave-gitops/pkg/services/auth"
-	"github.com/weaveworks/weave-gitops/pkg/services/auth/internal"
-	"github.com/weaveworks/weave-gitops/pkg/vendorfakes/fakehttp"
+	"github.com/zazathomas/weave-gitops/pkg/services/auth"
+	"github.com/zazathomas/weave-gitops/pkg/services/auth/internal"
+	"github.com/zazathomas/weave-gitops/pkg/vendorfakes/fakehttp"
 )
 
 var _ = Describe("GitlabAuthClient", func() {
@@ -40,7 +40,7 @@ var _ = Describe("GitlabAuthClient", func() {
 			AccessToken: "this-is-a-secret",
 			ExpiresIn:   1600,
 		}
-		b, err := json.Marshal(rs)
+		b, err := json.Marshal(rs) //nolint:gosec // G117: marshaling a test token response, no real secret
 		Expect(err).NotTo(HaveOccurred())
 
 		res.Body = io.NopCloser(bytes.NewReader(b))

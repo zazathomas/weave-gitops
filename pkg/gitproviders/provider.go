@@ -10,7 +10,7 @@ import (
 
 	"github.com/fluxcd/go-git-providers/gitprovider"
 
-	"github.com/weaveworks/weave-gitops/pkg/utils"
+	"github.com/zazathomas/weave-gitops/pkg/utils"
 )
 
 //go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -generate

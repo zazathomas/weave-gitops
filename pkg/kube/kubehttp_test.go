@@ -12,7 +12,7 @@ import (
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api/v1"
 	"sigs.k8s.io/yaml"
 
-	"github.com/weaveworks/weave-gitops/pkg/kube"
+	"github.com/zazathomas/weave-gitops/pkg/kube"
 )
 
 var _ = Describe("KubeHTTP", func() {

@@ -1,13 +1,10 @@
-# Release: bump Chart/values/package.json, generate notes (OpenAI or Anthropic), commit, tag, push, create GitHub Release.
-# Tag push uses REPO_PAT so it triggers ci.yaml; ci.yaml builds and pushes image, chart, and goreleaser on refs/tags/v*.
+# Release: bump the version, commit, tag, push and create a GitHub release.
 #
-# Fork-friendly: run from a fork; REPO_PAT must have repo scope for the fork. Image, chart,
-# release and goreleaser artifacts are created in the fork (github.repository).
+# The tag push triggers ci.yaml, which builds and publishes the image and chart to GHCR.
+# That needs a PAT: a tag pushed with GITHUB_TOKEN does not trigger workflows.
 #
-# Required secrets:
-#   REPO_PAT: repo PAT (or GitHub App token) with repo scope—used for checkout/push so the tag push triggers ci.yaml.
-#     (GITHUB_TOKEN pushes do not trigger workflows.) For a fork, use a PAT with access to the fork.
-#   OPENAI_API_KEY (when provider=openai), ANTHROPIC_API_KEY (when provider=anthropic)
+# Required secret:
+#   REPO_PAT: a PAT (or GitHub App token) with write access to this repository.
 
 name: Release
 
@@ -15,98 +12,112 @@ on:
   workflow_dispatch:
     inputs:
       bump:
-        description: "Bump type. minor-rc: 0.39.x -> 0.40.0-rc.1; rc: 0.39.0-rc.2 -> 0.39.0-rc.3"
-        required: false
+        description: "Semantic version bump applied to the current chart version"
+        required: true
         default: patch
         type: choice
         options:
           - patch
           - minor
           - major
-          - rc
-          - patch-rc
-          - minor-rc
-          - major-rc
+      version:
+        description: "Explicit version (e.g. 0.41.0). Overrides the bump above."
+        required: false
+        type: string
       branch:
-        description: "Branch to release from (e.g. main or feature/re-implement-workflows)"
+        description: "Branch to release from"
         required: false
         default: main
         type: string
-      provider:
-        description: "AI provider for release notes (openai or anthropic)"
-        required: false
-        default: anthropic
-        type: choice
-        options:
-          - openai
-          - anthropic
 
 permissions:
   contents: write
 
 jobs:
   release:
-    name: Bump, tag and push
+    name: Bump, tag and release
     runs-on: ubuntu-latest
-    env:
-      BUMP: ${{ github.event.inputs.bump || 'patch' }}
-      BRANCH: ${{ github.event.inputs.branch || 'main' }}
-      NOTES_PROVIDER: ${{ github.event.inputs.provider || 'anthropic' }}
-
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
-          ref: ${{ env.BRANCH }}
+          ref: ${{ inputs.branch }}
           token: ${{ secrets.REPO_PAT }}
           fetch-depth: 0
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-          cache: "pip"
-
-      - name: Set up tooling .venv
-        run: |
-          python3 -m venv tooling/.venv
-          tooling/.venv/bin/pip install --upgrade pip
-          tooling/.venv/bin/pip install -e ./tooling
-
-      - name: Bump version (Chart, values, package.json)
-        id: bump
-        run: tooling/.venv/bin/weavetooling release bump ${{ env.BUMP }}
-
-      - name: Check for changes
-        run: |
-          if git diff --quiet; then
-            echo "No version change (already at this version?)"
-            exit 1
-          fi
-
-      - name: Generate release notes (OpenAI or Anthropic per provider)
+      - name: Work out the next version
+        id: version
         env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          BUMP: ${{ inputs.bump }}
+          EXPLICIT: ${{ inputs.version }}
         run: |
-          tooling/.venv/bin/weavetooling release generate-notes \
-            --version ${{ steps.bump.outputs.version }} \
-            --output release-body.md \
-            --template .github/release-notes-template.md \
-            --provider ${{ env.NOTES_PROVIDER }}
+          current=$(python3 -c "
+          import re, sys
+          print(re.search(r'^version:\s*(\S+)$', open('charts/weave-gitops/Chart.yaml').read(), re.M).group(1))
+          ")
+          echo "current: $current"
+
+          next=$(python3 - "$current" "$BUMP" "$EXPLICIT" <<'EOF'
+          import re, sys
+          current, bump, explicit = sys.argv[1], sys.argv[2], sys.argv[3].strip()
+          if explicit:
+              print(explicit.lstrip("v"))
+              sys.exit(0)
+          m = re.fullmatch(r"(\d+)\.(\d+)\.(\d+)(?:-.*)?", current)
+          if not m:
+              sys.exit(f"cannot bump non-semver version {current!r}")
+          major, minor, patch = (int(g) for g in m.groups())
+          if bump == "major":
+              major, minor, patch = major + 1, 0, 0
+          elif bump == "minor":
+              minor, patch = minor + 1, 0
+          else:
+              patch += 1
+          print(f"{major}.{minor}.{patch}")
+          EOF
+          )
+          echo "next: $next"
+          echo "next=$next" >> "$GITHUB_OUTPUT"
+
+      - name: Bump Chart.yaml and package.json
+        env:
+          NEXT: ${{ steps.version.outputs.next }}
+        run: |
+          python3 - <<'EOF'
+          import json, os, re
+
+          version = os.environ["NEXT"]
+
+          chart_path = "charts/weave-gitops/Chart.yaml"
+          chart = open(chart_path).read()
+          chart = re.sub(r"^version: .*$", f"version: {version}", chart, count=1, flags=re.M)
+          chart = re.sub(r'^appVersion: .*$', f'appVersion: "v{version}"', chart, count=1, flags=re.M)
+          open(chart_path, "w").write(chart)
+
+          pkg_path = "package.json"
+          pkg = json.load(open(pkg_path))
+          pkg["version"] = version
+          open(pkg_path, "w").write(json.dumps(pkg, indent=2) + "\n")
+          EOF
+          git --no-pager diff --stat
 
       - name: Commit, tag and push
-        uses: EndBug/add-and-commit@v9
-        with:
-          add: "-u"
-          message: "chore(release): v${{ steps.bump.outputs.version }}"
-          tag: "v${{ steps.bump.outputs.version }}"
-          author_name: "github-actions[bot]"
-          author_email: "github-actions[bot]@users.noreply.github.com"
+        env:
+          NEXT: ${{ steps.version.outputs.next }}
+        run: |
+          if git diff --quiet; then
+            echo "nothing to release, the version is already $NEXT"
+            exit 1
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add charts/weave-gitops/Chart.yaml package.json
+          git commit -m "chore(release): v$NEXT"
+          git tag "v$NEXT"
+          git push origin "HEAD:${{ inputs.branch }}"
+          git push origin "v$NEXT"
 
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: "v${{ steps.bump.outputs.version }}"
-          body_path: release-body.md
-          generate_release_notes: false
+      - name: Create the GitHub release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NEXT: ${{ steps.version.outputs.next }}
+        run: gh release create "v$NEXT" --generate-notes --title "v$NEXT"

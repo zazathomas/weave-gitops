@@ -6,7 +6,7 @@ import (
 	"sync"
 
 	git "github.com/go-git/go-git/v5"
-	"github.com/weaveworks/weave-gitops/pkg/git/wrapper"
+	"github.com/zazathomas/weave-gitops/pkg/git/wrapper"
 )
 
 type FakeGit struct {

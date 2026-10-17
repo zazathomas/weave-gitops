@@ -102,6 +102,6 @@ formatters:
         - Standard
         - Default
         - Prefix(github.com/weaveworks)
-        - Prefix(github.com/weaveworks/weave-gitops)
+        - Prefix(github.com/zazathomas/weave-gitops)
     gofumpt:
       extra-rules: true

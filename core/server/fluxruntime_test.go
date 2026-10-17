@@ -18,12 +18,12 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 
-	"github.com/weaveworks/weave-gitops/core/clustersmngr/cluster"
-	"github.com/weaveworks/weave-gitops/core/server"
-	coretypes "github.com/weaveworks/weave-gitops/core/server/types"
-	pb "github.com/weaveworks/weave-gitops/pkg/api/core"
-	"github.com/weaveworks/weave-gitops/pkg/featureflags"
-	"github.com/weaveworks/weave-gitops/pkg/kube"
+	"github.com/zazathomas/weave-gitops/core/clustersmngr/cluster"
+	"github.com/zazathomas/weave-gitops/core/server"
+	coretypes "github.com/zazathomas/weave-gitops/core/server/types"
+	pb "github.com/zazathomas/weave-gitops/pkg/api/core"
+	"github.com/zazathomas/weave-gitops/pkg/featureflags"
+	"github.com/zazathomas/weave-gitops/pkg/kube"
 )
 
 func TestGetReconciledObjects(t *testing.T) {
@@ -106,7 +106,7 @@ func TestGetReconciledObjects(t *testing.T) {
 			Name:     "ns-admin",
 		}},
 	}
-	g.Expect(k.Create(ctx, &crb)).Should((Succeed()))
+	g.Expect(k.Create(ctx, &crb)).Should(Succeed())
 
 	type objectAssertion struct {
 		kind string

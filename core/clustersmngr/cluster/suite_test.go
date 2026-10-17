@@ -4,7 +4,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/weaveworks/weave-gitops/pkg/testutils"
+	"github.com/zazathomas/weave-gitops/pkg/testutils"
 )
 
 var k8sEnv *testutils.K8sTestEnv

@@ -3,8 +3,8 @@ package fetcher
 import (
 	"context"
 
-	mngr "github.com/weaveworks/weave-gitops/core/clustersmngr"
-	"github.com/weaveworks/weave-gitops/core/clustersmngr/cluster"
+	mngr "github.com/zazathomas/weave-gitops/core/clustersmngr"
+	"github.com/zazathomas/weave-gitops/core/clustersmngr/cluster"
 )
 
 type singleClusterFetcher struct {

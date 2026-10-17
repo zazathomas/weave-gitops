@@ -9,7 +9,7 @@ import (
 	"github.com/fluxcd/go-git-providers/gitlab"
 	"github.com/spf13/viper"
 
-	"github.com/weaveworks/weave-gitops/pkg/utils"
+	"github.com/zazathomas/weave-gitops/pkg/utils"
 )
 
 type RepositoryURLProtocol string
@@ -151,7 +151,7 @@ func parseGitURL(raw string) (*url.URL, error) {
 // a string like ssh://git@github.com/someuser/podinfo.git. This helps standardize the different
 // user inputs that might be provided.
 func normalizeRepoURLString(url string) (string, error) {
-	// https://github.com/weaveworks/weave-gitops/issues/878
+	// https://github.com/zazathomas/weave-gitops/issues/878
 	// A trailing slash causes problems when naming secrets.
 	url = strings.TrimSuffix(url, "/")
 

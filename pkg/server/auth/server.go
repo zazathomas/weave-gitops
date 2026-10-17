@@ -17,8 +17,8 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	ctrlclient "sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/weaveworks/weave-gitops/core/logger"
-	"github.com/weaveworks/weave-gitops/pkg/featureflags"
+	"github.com/zazathomas/weave-gitops/core/logger"
+	"github.com/zazathomas/weave-gitops/pkg/featureflags"
 )
 
 const (
@@ -540,7 +540,8 @@ func (s *AuthServer) Refresh(rw http.ResponseWriter, r *http.Request) (*UserPrin
 		ctx,
 		&oauth2.Token{
 			RefreshToken: refreshTokenCookie,
-		}).Token()
+		},
+	).Token()
 	if err != nil {
 		return nil, fmt.Errorf("failed to refresh token: %w", err)
 	}

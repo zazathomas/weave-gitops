@@ -6,7 +6,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	"github.com/weaveworks/weave-gitops/pkg/runner"
+	"github.com/zazathomas/weave-gitops/pkg/runner"
 )
 
 var cliRunner runner.Runner

@@ -3,7 +3,7 @@ package types
 import (
 	corev1 "k8s.io/api/core/v1"
 
-	pb "github.com/weaveworks/weave-gitops/pkg/api/core"
+	pb "github.com/zazathomas/weave-gitops/pkg/api/core"
 )
 
 func NamespaceToProto(ns corev1.Namespace, clusterName string) *pb.Namespace {

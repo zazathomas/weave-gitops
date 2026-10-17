@@ -20,11 +20,11 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/weaveworks/weave-gitops/core/clustersmngr"
-	"github.com/weaveworks/weave-gitops/core/logger"
-	coretypes "github.com/weaveworks/weave-gitops/core/server/types"
-	pb "github.com/weaveworks/weave-gitops/pkg/api/core"
-	"github.com/weaveworks/weave-gitops/pkg/server/auth"
+	"github.com/zazathomas/weave-gitops/core/clustersmngr"
+	"github.com/zazathomas/weave-gitops/core/logger"
+	coretypes "github.com/zazathomas/weave-gitops/core/server/types"
+	pb "github.com/zazathomas/weave-gitops/pkg/api/core"
+	"github.com/zazathomas/weave-gitops/pkg/server/auth"
 )
 
 const (
@@ -170,7 +170,7 @@ func listRuntimeCrdsByLabel(ctx context.Context, cs *coreServer, labels []string
 		return nil, nil, fmt.Errorf("error getting impersonating client: %w", err)
 	}
 
-	clist := clustersmngr.NewClusteredList(func() client.ObjectList {
+	clist := clustersmngr.NewClusteredList(func(string) client.ObjectList {
 		return &apiextensions.CustomResourceDefinitionList{}
 	})
 
@@ -455,7 +455,7 @@ func getUniqueKinds(gvks []*pb.GroupVersionKind) []*pb.GroupVersionKind {
 		uniqueMap[gvk.String()] = gvk
 	}
 
-	unique := []*pb.GroupVersionKind{}
+	unique := make([]*pb.GroupVersionKind, 0, len(uniqueMap))
 
 	for _, gvk := range uniqueMap {
 		unique = append(unique, gvk)

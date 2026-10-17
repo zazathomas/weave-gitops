@@ -19,6 +19,8 @@ export type Source =
   | GitRepository
   | Bucket
   | OCIRepository
+  | ExternalArtifact
+  | ArtifactGenerator
   | ImageRepository
   | ImageUpdateAutomation;
 
@@ -215,6 +217,68 @@ export class OCIRepository extends FluxObject {
   }
 }
 
+// ExternalArtifact is a source that wraps the artifact produced by another
+// source, or by an ArtifactGenerator.
+export class ExternalArtifact extends FluxObject {
+  get sourceRef(): ObjectRef | undefined {
+    if (!this.obj.spec?.sourceRef) {
+      return undefined;
+    }
+    const sourceRef = {
+      ...this.obj.spec.sourceRef,
+    };
+    if (!sourceRef.namespace) {
+      sourceRef.namespace = this.namespace;
+    }
+    return sourceRef;
+  }
+
+  get artifactURL(): string {
+    return this.obj.status?.artifact?.url || "";
+  }
+
+  get revision(): string {
+    return this.obj.status?.artifact?.revision || "";
+  }
+}
+
+export type ArtifactGeneratorSource = {
+  alias: string;
+  kind: string;
+  name: string;
+  namespace?: string;
+};
+
+export type ArtifactGeneratorOutput = {
+  name: string;
+  revision?: string;
+};
+
+export type ArtifactReference = {
+  name: string;
+  namespace?: string;
+};
+
+// ArtifactGenerator produces ExternalArtifacts from a combination of other
+// sources, using an optional pathPattern and one or more copy operations.
+export class ArtifactGenerator extends FluxObject {
+  get sources(): ArtifactGeneratorSource[] {
+    return this.obj.spec?.sources || [];
+  }
+
+  get pathPattern(): string {
+    return this.obj.spec?.pathPattern || "";
+  }
+
+  get outputArtifacts(): ArtifactGeneratorOutput[] {
+    return this.obj.spec?.artifacts || [];
+  }
+
+  get generatedArtifacts(): ArtifactReference[] {
+    return this.obj.status?.inventory || [];
+  }
+}
+
 export class Kustomization extends FluxObject {
   get dependsOn(): NamespacedObjectReference[] {
     return this.obj.spec?.dependsOn || [];
@@ -310,7 +374,13 @@ export class HelmRelease extends FluxObject {
   }
 
   get lastAppliedRevision(): string {
-    return this.obj.status?.lastAppliedRevision || "";
+    // Flux 2.9 removed status.lastAppliedRevision from HelmRelease, so fall
+    // back to the last attempted revision to keep the revision column useful.
+    return (
+      this.obj.status?.lastAppliedRevision ||
+      this.obj.status?.lastAttemptedRevision ||
+      ""
+    );
   }
 
   get lastAttemptedRevision(): string {
@@ -388,6 +458,23 @@ export class Alert extends FluxObject {
   }
   get eventSources(): CrossNamespaceObjectRef[] {
     return this.obj.spec?.eventSources || [];
+  }
+}
+
+// Receiver is the notification webhook endpoint that receives external events
+// and triggers reconciliation of the referenced resources.
+export class Receiver extends FluxObject {
+  get receiverType(): string {
+    return this.obj.spec?.type || "";
+  }
+  get resources(): CrossNamespaceObjectRef[] {
+    return this.obj.spec?.resources || [];
+  }
+  get secretRef(): string {
+    return this.obj.spec?.secretRef?.name || "";
+  }
+  get webhookPath(): string {
+    return this.obj.status?.webhookPath || "";
   }
 }
 

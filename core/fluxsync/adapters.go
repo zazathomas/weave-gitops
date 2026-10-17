@@ -365,7 +365,26 @@ func (s sRef) Kind() string {
 // know about, but which follow the same patterns for suspend/sync as a stadard flux object.
 // E.g. `spec.suspend` and `status.lastHandledReconcileRequest` etc.
 func ToReconcileable(gvk schema.GroupVersionKind) Reconcilable {
-	switch gvk.Kind {
+	if typed := typedReconcileable(gvk.Kind); typed != nil && typed.GroupVersionKind() == gvk {
+		return typed
+	}
+
+	// Fall through to the UnstructuredAdapter when the cluster serves a version
+	// we have no typed adapter compiled against: Flux 2.0 serves HelmRelease as
+	// v2beta1, for example. The typed adapters are pinned to a single version, so
+	// using one for another version would address the wrong endpoint. The
+	// operations behind Reconcilable (reading conditions, toggling
+	// spec.suspend, triggering a reconcile) are the same in every version.
+	obj := &unstructured.Unstructured{}
+	obj.SetGroupVersionKind(gvk)
+
+	return UnstructuredAdapter{Unstructured: obj}
+}
+
+// typedReconcileable returns a type-specific adapter for kind, or nil when the
+// kind is only supported generically.
+func typedReconcileable(kind string) Reconcilable {
+	switch kind {
 	case kustomizev1.KustomizationKind:
 		return KustomizationAdapter{Kustomization: &kustomizev1.Kustomization{}}
 	case helmv2.HelmReleaseKind:
@@ -387,8 +406,5 @@ func ToReconcileable(gvk schema.GroupVersionKind) Reconcilable {
 		return ImageUpdateAutomationAdapter{ImageUpdateAutomation: &imgautomationv1.ImageUpdateAutomation{}}
 	}
 
-	// Return the UnstructuredAdapter for flux-like resources
-	obj := &unstructured.Unstructured{}
-	obj.SetGroupVersionKind(gvk)
-	return UnstructuredAdapter{Unstructured: obj}
+	return nil
 }

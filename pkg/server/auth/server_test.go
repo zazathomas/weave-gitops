@@ -24,8 +24,8 @@ import (
 	ctrlclient "sigs.k8s.io/controller-runtime/pkg/client"
 	ctrlclientfake "sigs.k8s.io/controller-runtime/pkg/client/fake"
 
-	"github.com/weaveworks/weave-gitops/pkg/featureflags"
-	"github.com/weaveworks/weave-gitops/pkg/server/auth"
+	"github.com/zazathomas/weave-gitops/pkg/featureflags"
+	"github.com/zazathomas/weave-gitops/pkg/server/auth"
 )
 
 // A custom client that doesn't automatically follow redirects
@@ -104,7 +104,7 @@ func TestCallbackStateCookieNotValid(t *testing.T) {
 	s, _ := makeAuthServer(t, nil, nil, []auth.AuthMethod{auth.OIDC}, &fakeSessionManager{})
 
 	req := httptest.NewRequest(http.MethodGet, "https://example.com/callback?code=123&state=some_state", nil)
-	req.AddCookie(&http.Cookie{
+	req.AddCookie(&http.Cookie{ //nolint:gosec // G124: request cookie in a test, never served to a browser
 		Name:  auth.StateCookieName,
 		Value: "some_different_state",
 	})
@@ -121,7 +121,7 @@ func TestCallbackStateCookieNotBase64Encoded(t *testing.T) {
 	s, _ := makeAuthServer(t, nil, nil, []auth.AuthMethod{auth.OIDC}, &fakeSessionManager{})
 
 	req := httptest.NewRequest(http.MethodGet, "https://example.com/callback?code=123&state=some_state", nil)
-	req.AddCookie(&http.Cookie{
+	req.AddCookie(&http.Cookie{ //nolint:gosec // G124: request cookie in a test, never served to a browser
 		Name:  auth.StateCookieName,
 		Value: "some_state",
 	})
@@ -140,7 +140,7 @@ func TestCallbackStateCookieNotJSONPayload(t *testing.T) {
 	encState := base64.StdEncoding.EncodeToString([]byte("some_state"))
 
 	req := httptest.NewRequest(http.MethodGet, fmt.Sprintf("https://example.com/callback?code=123&state=%s", encState), nil)
-	req.AddCookie(&http.Cookie{
+	req.AddCookie(&http.Cookie{ //nolint:gosec // G124: request cookie in a test, never served to a browser
 		Name:  auth.StateCookieName,
 		Value: encState,
 	})
@@ -232,7 +232,7 @@ func TestSignInNoSecret(t *testing.T) {
 
 	s, _ := makeAuthServer(t, ctrlclientfake.NewClientBuilder().Build(), tokenSignerVerifier, []auth.AuthMethod{auth.OIDC}, &fakeSessionManager{})
 
-	j, _ := json.Marshal(auth.LoginRequest{})
+	j, _ := json.Marshal(auth.LoginRequest{}) //nolint:gosec // G117: marshaling a test login request, no real secret
 
 	reader := bytes.NewReader(j)
 
@@ -275,7 +275,7 @@ func TestSignInWrongUsernameReturnsUnauthorized(t *testing.T) {
 		Password: "my-secret-password",
 	}
 
-	j, _ := json.Marshal(login)
+	j, _ := json.Marshal(login) //nolint:gosec // G117: marshaling a test login request, no real secret
 
 	reader := bytes.NewReader(j)
 
@@ -315,7 +315,7 @@ func TestSignInWrongPasswordReturnsUnauthorized(t *testing.T) {
 		Password: "wrong",
 	}
 
-	j, _ := json.Marshal(login)
+	j, _ := json.Marshal(login) //nolint:gosec // G117: marshaling a test login request, no real secret
 
 	reader := bytes.NewReader(j)
 
@@ -354,7 +354,7 @@ func TestSignInCorrectPassword(t *testing.T) {
 		Password: password,
 	}
 
-	j, _ := json.Marshal(login)
+	j, _ := json.Marshal(login) //nolint:gosec // G117: marshaling a test login request, no real secret
 
 	reader := bytes.NewReader(j)
 
@@ -459,7 +459,8 @@ func TestUserInfoAdminFlow(t *testing.T) {
 	req := httptest.NewRequest(http.MethodGet, "https://example.com/userinfo", nil).WithContext(
 		contextWithSessionValues(map[string]any{
 			auth.IDTokenCookieName: signed,
-		}))
+		}),
+	)
 
 	w := httptest.NewRecorder()
 	s.UserInfo(w, req)
@@ -499,7 +500,8 @@ func TestUserInfoAdminFlow_differentUsername(t *testing.T) {
 	req := httptest.NewRequest(http.MethodGet, "https://example.com/userinfo", nil).WithContext(
 		contextWithSessionValues(map[string]any{
 			auth.IDTokenCookieName: signed,
-		}))
+		}),
+	)
 
 	w := httptest.NewRecorder()
 	s.UserInfo(w, req)
@@ -536,7 +538,8 @@ func TestUserInfoAdminFlowBadCookie(t *testing.T) {
 	req := httptest.NewRequest(http.MethodGet, "https://example.com/userinfo", nil).WithContext(
 		contextWithSessionValues(map[string]any{
 			auth.IDTokenCookieName: "bad-cookie",
-		}))
+		}),
+	)
 
 	w := httptest.NewRecorder()
 	s.UserInfo(w, req)
@@ -596,7 +599,8 @@ func getVerifyTokens(t *testing.T, m *mockoidc.MockOIDC) map[string]interface{} 
 	})
 
 	tokenReq, err := http.NewRequest(
-		http.MethodPost, m.TokenEndpoint(), bytes.NewBufferString(tokenForm.Encode()))
+		http.MethodPost, m.TokenEndpoint(), bytes.NewBufferString(tokenForm.Encode()),
+	)
 	g.Expect(err).NotTo(HaveOccurred())
 	tokenReq.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 
@@ -635,7 +639,8 @@ func TestUserInfoOIDCFlow(t *testing.T) {
 	req := httptest.NewRequest(http.MethodGet, "https://example.com/userinfo", nil).WithContext(
 		contextWithSessionValues(map[string]any{
 			auth.IDTokenCookieName: idToken.Raw,
-		}))
+		}),
+	)
 
 	w := httptest.NewRecorder()
 	s.UserInfo(w, req)
@@ -693,7 +698,8 @@ func TestUserInfoOIDCFlow_with_custom_claims(t *testing.T) {
 	})
 
 	tokenReq, err := http.NewRequest(
-		http.MethodPost, m.TokenEndpoint(), bytes.NewBufferString(tokenForm.Encode()))
+		http.MethodPost, m.TokenEndpoint(), bytes.NewBufferString(tokenForm.Encode()),
+	)
 	g.Expect(err).NotTo(HaveOccurred())
 	tokenReq.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 
@@ -714,7 +720,8 @@ func TestUserInfoOIDCFlow_with_custom_claims(t *testing.T) {
 	req := httptest.NewRequest(http.MethodGet, "https://example.com/userinfo", nil).WithContext(
 		contextWithSessionValues(map[string]any{
 			auth.IDTokenCookieName: idToken.Raw,
-		}))
+		}),
+	)
 
 	w := httptest.NewRecorder()
 	authServer.OIDCConfig.ClaimsConfig = &auth.ClaimsConfig{
@@ -752,7 +759,8 @@ func TestRefresh(t *testing.T) {
 	req := httptest.NewRequest(http.MethodGet, "https://example.com/test", nil).WithContext(
 		contextWithSessionValues(map[string]any{
 			auth.RefreshTokenCookieName: tf,
-		}))
+		}),
+	)
 
 	w := httptest.NewRecorder()
 
@@ -791,7 +799,8 @@ func TestRefreshSucceedsReturns200(t *testing.T) {
 		WithContext(
 			contextWithSessionValues(map[string]any{
 				auth.RefreshTokenCookieName: tf,
-			}))
+			}),
+		)
 
 	w := httptest.NewRecorder()
 	s.RefreshHandler(w, req)
@@ -839,7 +848,8 @@ func TestRefreshInvalidToken(t *testing.T) {
 	req := httptest.NewRequest(http.MethodGet, "https://example.com/test", nil).WithContext(
 		contextWithSessionValues(map[string]any{
 			auth.RefreshTokenCookieName: "invalid",
-		}))
+		}),
+	)
 
 	user, err := s.Refresh(w, req)
 
@@ -869,7 +879,8 @@ func TestLogoutSuccess(t *testing.T) {
 	req := httptest.NewRequest(http.MethodPost, "https://example.com/logout", nil).WithContext(
 		contextWithValues(t.Context(), map[string]any{
 			"sessionid": "test-session",
-		}))
+		}),
+	)
 
 	s.Logout(w, req)
 

@@ -9,8 +9,8 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/weaveworks/weave-gitops/pkg/services/auth/internal"
-	"github.com/weaveworks/weave-gitops/pkg/services/auth/types"
+	"github.com/zazathomas/weave-gitops/pkg/services/auth/internal"
+	"github.com/zazathomas/weave-gitops/pkg/services/auth/types"
 )
 
 var gitlabScopes = []string{"api", "read_user", "profile"}

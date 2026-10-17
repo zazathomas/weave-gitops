@@ -9,7 +9,7 @@ import (
 	v1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
 
-	"github.com/weaveworks/weave-gitops/core/clustersmngr"
+	"github.com/zazathomas/weave-gitops/core/clustersmngr"
 )
 
 const watchCRDsFrequency = 30 * time.Second
@@ -18,6 +18,9 @@ type Fetcher interface {
 	IsAvailable(ctx context.Context, clusterName, name string) bool
 	IsAvailableOnClusters(ctx context.Context, name string) map[string]bool
 	UpdateCRDList(context.Context)
+	// CRDs returns the CRDs currently known for a cluster, as last observed.
+	// It is used to work out which API version a cluster actually serves.
+	CRDs(ctx context.Context, clusterName string) []v1.CustomResourceDefinition
 }
 
 // NewFetcher creates a new default fetcher with cache.
@@ -77,6 +80,14 @@ func (s *defaultFetcher) UpdateCRDList(ctx context.Context) {
 
 		s.crds[clusterName] = crdList.Items
 	}
+}
+
+// CRDs returns the CRDs currently known for a cluster.
+func (s *defaultFetcher) CRDs(_ context.Context, clusterName string) []v1.CustomResourceDefinition {
+	s.Lock()
+	defer s.Unlock()
+
+	return s.crds[clusterName]
 }
 
 // IsAvailable tells if a given CRD is available on the specified cluster.

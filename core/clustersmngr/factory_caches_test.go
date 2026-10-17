@@ -2,6 +2,7 @@ package clustersmngr_test
 
 import (
 	"fmt"
+	"sync"
 	"testing"
 	"time"
 
@@ -11,10 +12,10 @@ import (
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/rest"
 
-	"github.com/weaveworks/weave-gitops/core/clustersmngr"
-	"github.com/weaveworks/weave-gitops/core/clustersmngr/cluster"
-	"github.com/weaveworks/weave-gitops/pkg/kube"
-	"github.com/weaveworks/weave-gitops/pkg/server/auth"
+	"github.com/zazathomas/weave-gitops/core/clustersmngr"
+	"github.com/zazathomas/weave-gitops/core/clustersmngr/cluster"
+	"github.com/zazathomas/weave-gitops/pkg/kube"
+	"github.com/zazathomas/weave-gitops/pkg/server/auth"
 )
 
 func TestUsersNamespaces(t *testing.T) {
@@ -83,10 +84,27 @@ func TestClustersNamespaces(t *testing.T) {
 	ns.Name = "ns1"
 
 	// simulating concurrent access
-	go cs.Set(clusterName, []v1.Namespace{ns})
-	go cs.Set(clusterName, []v1.Namespace{ns})
+	var wg sync.WaitGroup
+
+	wg.Add(2)
+
+	go func() {
+		defer wg.Done()
+
+		cs.Set(clusterName, []v1.Namespace{ns})
+	}()
+
+	go func() {
+		defer wg.Done()
+
+		cs.Set(clusterName, []v1.Namespace{ns})
+	}()
 
 	cs.Set(clusterName, []v1.Namespace{ns})
+
+	// Wait for the writers before clearing, otherwise one of them can repopulate
+	// the map after Clear and the assertion below fails intermittently.
+	wg.Wait()
 
 	g.Expect(cs.Get(clusterName)).To(Equal([]v1.Namespace{ns}))
 

@@ -20,6 +20,9 @@ export enum Kind {
   ImagePolicy = "ImagePolicy",
   Pod = "Pod",
   Policy = "Policy",
+  ExternalArtifact = "ExternalArtifact",
+  Receiver = "Receiver",
+  ArtifactGenerator = "ArtifactGenerator",
 }
 
 export enum HelmRepositoryType {

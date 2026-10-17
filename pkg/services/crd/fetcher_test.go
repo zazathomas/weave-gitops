@@ -7,7 +7,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/weaveworks/weave-gitops/pkg/kube"
+	"github.com/zazathomas/weave-gitops/pkg/kube"
 )
 
 func TestFetcher_IsAvailable(t *testing.T) {

@@ -16,9 +16,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/envtest"
 
-	"github.com/weaveworks/weave-gitops/core/clustersmngr/cluster"
-	"github.com/weaveworks/weave-gitops/pkg/kube"
-	"github.com/weaveworks/weave-gitops/pkg/server/auth"
+	"github.com/zazathomas/weave-gitops/core/clustersmngr/cluster"
+	"github.com/zazathomas/weave-gitops/pkg/kube"
+	"github.com/zazathomas/weave-gitops/pkg/server/auth"
 )
 
 var userName = "test-user"

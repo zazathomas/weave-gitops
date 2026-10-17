@@ -10,12 +10,12 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/rand"
 
-	"github.com/weaveworks/weave-gitops/pkg/flux"
-	"github.com/weaveworks/weave-gitops/pkg/gitproviders"
-	"github.com/weaveworks/weave-gitops/pkg/gitproviders/gitprovidersfakes"
-	"github.com/weaveworks/weave-gitops/pkg/names"
-	"github.com/weaveworks/weave-gitops/pkg/runner"
-	"github.com/weaveworks/weave-gitops/pkg/services/auth"
+	"github.com/zazathomas/weave-gitops/pkg/flux"
+	"github.com/zazathomas/weave-gitops/pkg/gitproviders"
+	"github.com/zazathomas/weave-gitops/pkg/gitproviders/gitprovidersfakes"
+	"github.com/zazathomas/weave-gitops/pkg/names"
+	"github.com/zazathomas/weave-gitops/pkg/runner"
+	"github.com/zazathomas/weave-gitops/pkg/services/auth"
 )
 
 var _ = Describe("auth", func() {

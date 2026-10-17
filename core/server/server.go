@@ -8,11 +8,11 @@ import (
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"k8s.io/client-go/rest"
 
-	"github.com/weaveworks/weave-gitops/core/clustersmngr"
-	"github.com/weaveworks/weave-gitops/core/nsaccess"
-	pb "github.com/weaveworks/weave-gitops/pkg/api/core"
-	"github.com/weaveworks/weave-gitops/pkg/health"
-	"github.com/weaveworks/weave-gitops/pkg/services/crd"
+	"github.com/zazathomas/weave-gitops/core/clustersmngr"
+	"github.com/zazathomas/weave-gitops/core/nsaccess"
+	pb "github.com/zazathomas/weave-gitops/pkg/api/core"
+	"github.com/zazathomas/weave-gitops/pkg/health"
+	"github.com/zazathomas/weave-gitops/pkg/services/crd"
 )
 
 func Hydrate(ctx context.Context, mux *runtime.ServeMux, cfg CoreServerConfig) error {

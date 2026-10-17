@@ -32,7 +32,7 @@ import (
 	"github.com/go-git/go-git/v5/plumbing/object"
 	"github.com/go-git/go-git/v5/plumbing/transport"
 
-	"github.com/weaveworks/weave-gitops/pkg/git/wrapper"
+	"github.com/zazathomas/weave-gitops/pkg/git/wrapper"
 )
 
 type GoGit struct {

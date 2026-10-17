@@ -7,7 +7,7 @@ import (
 
 	"github.com/golang-jwt/jwt/v5"
 
-	"github.com/weaveworks/weave-gitops/pkg/gitproviders"
+	"github.com/zazathomas/weave-gitops/pkg/gitproviders"
 )
 
 //go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -generate

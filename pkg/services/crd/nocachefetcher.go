@@ -7,7 +7,7 @@ import (
 	"github.com/go-logr/logr"
 	v1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 
-	"github.com/weaveworks/weave-gitops/core/clustersmngr"
+	"github.com/zazathomas/weave-gitops/core/clustersmngr"
 )
 
 // NewNoCacheFetcher creates a new fetcher without cache.
@@ -54,6 +54,18 @@ func (s *noCacheFetcher) UpdateCRDList(ctx context.Context) {
 
 		s.crds[clusterName] = crdList.Items
 	}
+}
+
+// CRDs returns the CRDs currently known for a cluster.
+//
+// It calls UpdateCRDList always.
+func (s *noCacheFetcher) CRDs(ctx context.Context, clusterName string) []v1.CustomResourceDefinition {
+	s.UpdateCRDList(ctx)
+
+	s.Lock()
+	defer s.Unlock()
+
+	return s.crds[clusterName]
 }
 
 // IsAvailable tells if a given CRD is available on the specified cluster.

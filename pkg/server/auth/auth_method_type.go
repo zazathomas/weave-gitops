@@ -32,7 +32,7 @@ func DefaultAuthMethods() []AuthMethod {
 // --insecure-no-auth flag
 func AllUserAuthMethods() []string {
 	allUserAuthMethods := []AuthMethod{UserAccount, OIDC, TokenPassthrough}
-	res := []string{}
+	res := make([]string, 0, len(allUserAuthMethods))
 	for _, method := range allUserAuthMethods {
 		res = append(res, method.String())
 	}
@@ -41,8 +41,9 @@ func AllUserAuthMethods() []string {
 }
 
 func DefaultAuthMethodStrings() []string {
-	res := []string{}
-	for _, method := range DefaultAuthMethods() {
+	methods := DefaultAuthMethods()
+	res := make([]string, 0, len(methods))
+	for _, method := range methods {
 		res = append(res, method.String())
 	}
 
@@ -50,7 +51,7 @@ func DefaultAuthMethodStrings() []string {
 }
 
 func toAuthMethodStrings(authMethods map[AuthMethod]bool) []string {
-	res := []string{}
+	res := make([]string, 0, len(authMethods))
 	for method := range authMethods {
 		res = append(res, method.String())
 	}

@@ -12,11 +12,11 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/yaml"
 
-	"github.com/weaveworks/weave-gitops/pkg/flux"
-	"github.com/weaveworks/weave-gitops/pkg/git"
-	"github.com/weaveworks/weave-gitops/pkg/git/wrapper"
-	"github.com/weaveworks/weave-gitops/pkg/gitproviders"
-	"github.com/weaveworks/weave-gitops/pkg/names"
+	"github.com/zazathomas/weave-gitops/pkg/flux"
+	"github.com/zazathomas/weave-gitops/pkg/git"
+	"github.com/zazathomas/weave-gitops/pkg/git/wrapper"
+	"github.com/zazathomas/weave-gitops/pkg/gitproviders"
+	"github.com/zazathomas/weave-gitops/pkg/names"
 )
 
 type ProviderTokenValidator interface {

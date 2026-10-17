@@ -27,7 +27,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/envtest"
 
-	"github.com/weaveworks/weave-gitops/pkg/kube"
+	"github.com/zazathomas/weave-gitops/pkg/kube"
 )
 
 var k8sEnv *K8sTestEnv

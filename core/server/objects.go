@@ -9,21 +9,30 @@ import (
 	kustomizev1 "github.com/fluxcd/kustomize-controller/api/v1"
 	"github.com/hashicorp/go-multierror"
 	v1 "k8s.io/api/apps/v1"
+	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/weaveworks/weave-gitops/core/clustersmngr"
-	"github.com/weaveworks/weave-gitops/core/logger"
-	"github.com/weaveworks/weave-gitops/core/server/types"
-	pb "github.com/weaveworks/weave-gitops/pkg/api/core"
-	"github.com/weaveworks/weave-gitops/pkg/run/constants"
-	"github.com/weaveworks/weave-gitops/pkg/server/auth"
+	"github.com/zazathomas/weave-gitops/core/clustersmngr"
+	"github.com/zazathomas/weave-gitops/core/logger"
+	"github.com/zazathomas/weave-gitops/core/server/types"
+	pb "github.com/zazathomas/weave-gitops/pkg/api/core"
+	"github.com/zazathomas/weave-gitops/pkg/run/constants"
+	"github.com/zazathomas/weave-gitops/pkg/server/auth"
 )
 
 const (
 	sessionObjectsInfo = "session objects created"
 )
+
+// skipListError reports whether a per-cluster list error should be hidden from
+// the response. Flux adds kinds between releases, so a cluster running an older
+// Flux does not serve the CRD for a newer kind; listing it should come back
+// empty rather than as an error the UI shows as a banner.
+func skipListError(err error) bool {
+	return meta.IsNoMatchError(err)
+}
 
 func getUnstructuredHelmReleaseInventory(ctx context.Context, obj unstructured.Unstructured, c clustersmngr.Client, cluster string) ([]*pb.GroupVersionKind, error) {
 	var release helmv2.HelmRelease
@@ -69,9 +78,11 @@ func (cs *coreServer) ListObjects(ctx context.Context, msg *pb.ListObjectsReques
 		}
 	}
 
-	clist := clustersmngr.NewClusteredList(func() client.ObjectList {
+	clist := clustersmngr.NewClusteredList(func(clusterName string) client.ObjectList {
 		list := unstructured.UnstructuredList{}
-		list.SetGroupVersionKind(*gvk)
+		// The cluster may only serve an older version of this kind than the one
+		// we compile against, so ask for the version it actually has.
+		list.SetGroupVersionKind(cs.servedGVK(ctx, clusterName, *gvk))
 		return &list
 	})
 
@@ -89,6 +100,10 @@ func (cs *coreServer) ListObjects(ctx context.Context, msg *pb.ListObjectsReques
 		}
 
 		for _, e := range errs.Errors {
+			if skipListError(e.Err) {
+				continue
+			}
+
 			respErrors = append(respErrors, &pb.ListError{ClusterName: e.Cluster, Namespace: e.Namespace, Message: e.Err.Error()})
 		}
 	}
@@ -233,7 +248,7 @@ func (cs *coreServer) GetObject(ctx context.Context, msg *pb.GetObjectRequest) (
 	}
 
 	unstructuredObj := unstructured.Unstructured{}
-	unstructuredObj.SetGroupVersionKind(*gvk)
+	unstructuredObj.SetGroupVersionKind(cs.servedGVK(ctx, msg.ClusterName, *gvk))
 
 	key := client.ObjectKey{
 		Name:      msg.Name,

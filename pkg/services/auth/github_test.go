@@ -7,8 +7,8 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	"github.com/weaveworks/weave-gitops/pkg/services/auth"
-	"github.com/weaveworks/weave-gitops/pkg/vendorfakes/fakehttp"
+	"github.com/zazathomas/weave-gitops/pkg/services/auth"
+	"github.com/zazathomas/weave-gitops/pkg/vendorfakes/fakehttp"
 )
 
 var _ = Describe("GitHub error parsing", func() {

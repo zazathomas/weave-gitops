@@ -13,8 +13,8 @@ import (
 	"github.com/sethvargo/go-limiter/httplimit"
 	"github.com/sethvargo/go-limiter/memorystore"
 
-	"github.com/weaveworks/weave-gitops/core/logger"
-	"github.com/weaveworks/weave-gitops/pkg/featureflags"
+	"github.com/zazathomas/weave-gitops/core/logger"
+	"github.com/zazathomas/weave-gitops/pkg/featureflags"
 )
 
 const (

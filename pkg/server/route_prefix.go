@@ -53,7 +53,58 @@ func GetBaseHref(routePrefix string) string {
 
 // InjectHTMLBaseTag injects a <base href> tag into the provided html.
 // This is used to set the base URL for all the assets (js, css, etc) that
-// are loaded by the browser.
+// are loaded by the browser, so that a deep link into the UI keeps resolving
+// relative asset paths against the root of the app rather than the current
+// route.
+//
+// Production builds of the UI drop the <head> element entirely (Parcel
+// removes it while minifying index.html), so when it is missing the tag is
+// placed straight after the opening <html> tag. Browsers handle a <base> start
+// tag found outside of <head> using the "in head" insertion rules, so this is
+// equivalent.
 func InjectHTMLBaseTag(html []byte, baseHref string) []byte {
-	return []byte(strings.Replace(string(html), "<head>", fmt.Sprintf("<head><base href=%q>", baseHref), 1))
+	baseTag := fmt.Sprintf("<base href=%q>", baseHref)
+	doc := string(html)
+
+	// Prefer <head>, with or without attributes.
+	if cut, ok := afterOpeningTag(doc, "head"); ok {
+		return []byte(doc[:cut] + baseTag + doc[cut:])
+	}
+
+	// Fall back to the opening <html> tag.
+	if cut, ok := afterOpeningTag(doc, "html"); ok {
+		return []byte(doc[:cut] + baseTag + doc[cut:])
+	}
+
+	return []byte(baseTag + doc)
+}
+
+// afterOpeningTag returns the offset just past the ">" that closes the first
+// "<name" start tag, ignoring longer names such as <header> when looking for
+// <head>. The boolean is false when no such start tag exists.
+func afterOpeningTag(doc, name string) (int, bool) {
+	needle := "<" + name
+
+	for offset := 0; offset < len(doc); {
+		idx := strings.Index(doc[offset:], needle)
+		if idx == -1 {
+			return 0, false
+		}
+
+		idx += offset
+		rest := doc[idx+len(needle):]
+
+		if rest != "" && (rest[0] == '>' || rest[0] == ' ' || rest[0] == '\t' || rest[0] == '\n' || rest[0] == '\r') {
+			end := strings.Index(doc[idx:], ">")
+			if end == -1 {
+				return 0, false
+			}
+
+			return idx + end + 1, true
+		}
+
+		offset = idx + len(needle)
+	}
+
+	return 0, false
 }

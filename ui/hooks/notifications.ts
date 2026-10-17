@@ -3,12 +3,13 @@ import { useContext } from "react";
 import { CoreClientContext } from "../contexts/CoreClientContext";
 import { ListError } from "../lib/api/core/core.pb";
 import { Kind } from "../lib/api/core/types.pb";
-import { Alert, Provider } from "../lib/objects";
+import { Alert, Provider, Receiver } from "../lib/objects";
 import { NoNamespace, ReactQueryOptions, RequestError } from "../lib/types";
 import { convertResponse } from "./objects";
 
 type Res = { objects: Provider[]; errors: ListError[] };
 type AlertsRes = { objects: Alert[]; errors: ListError[] };
+type ReceiversRes = { objects: Receiver[]; errors: ListError[] };
 
 export function useListProviders(
   namespace: string = NoNamespace,
@@ -50,6 +51,28 @@ export function useListAlerts(
         );
         const matches = alerts.filter((alert) => alert.providerRef === name);
         return { objects: matches, errors: res.errors };
+      });
+    },
+    ...opts,
+  });
+}
+
+export function useListReceivers(
+  namespace: string = NoNamespace,
+  opts: ReactQueryOptions<ReceiversRes, RequestError> = {
+    retry: false,
+    refetchInterval: 5000,
+  },
+) {
+  const { api } = useContext(CoreClientContext);
+  return useQuery<ReceiversRes, RequestError>({
+    queryKey: ["receivers", namespace],
+    queryFn: () => {
+      return api.ListObjects({ namespace, kind: Kind.Receiver }).then((res) => {
+        const receivers = res.objects?.map(
+          (obj) => convertResponse(Kind.Receiver, obj) as Receiver,
+        );
+        return { objects: receivers, errors: res.errors };
       });
     },
     ...opts,

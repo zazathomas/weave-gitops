@@ -5,7 +5,7 @@ import (
 	"context"
 	"sync"
 
-	"github.com/weaveworks/weave-gitops/core/nsaccess"
+	"github.com/zazathomas/weave-gitops/core/nsaccess"
 	v1 "k8s.io/api/core/v1"
 	v1a "k8s.io/client-go/kubernetes/typed/authorization/v1"
 )

@@ -14,9 +14,9 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	"github.com/weaveworks/weave-gitops/pkg/git"
-	"github.com/weaveworks/weave-gitops/pkg/git/wrapper"
-	"github.com/weaveworks/weave-gitops/pkg/git/wrapper/wrapperfakes"
+	"github.com/zazathomas/weave-gitops/pkg/git"
+	"github.com/zazathomas/weave-gitops/pkg/git/wrapper"
+	"github.com/zazathomas/weave-gitops/pkg/git/wrapper/wrapperfakes"
 )
 
 var (

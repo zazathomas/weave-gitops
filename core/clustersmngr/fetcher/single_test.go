@@ -6,9 +6,9 @@ import (
 	. "github.com/onsi/gomega"
 	"k8s.io/client-go/rest"
 
-	"github.com/weaveworks/weave-gitops/core/clustersmngr/cluster"
-	"github.com/weaveworks/weave-gitops/core/clustersmngr/fetcher"
-	"github.com/weaveworks/weave-gitops/pkg/kube"
+	"github.com/zazathomas/weave-gitops/core/clustersmngr/cluster"
+	"github.com/zazathomas/weave-gitops/core/clustersmngr/fetcher"
+	"github.com/zazathomas/weave-gitops/pkg/kube"
 )
 
 func TestSingleFetcher(t *testing.T) {

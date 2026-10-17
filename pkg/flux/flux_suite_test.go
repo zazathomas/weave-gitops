@@ -6,7 +6,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	"github.com/weaveworks/weave-gitops/pkg/version"
+	"github.com/zazathomas/weave-gitops/pkg/version"
 )
 
 func TestFlux(t *testing.T) {

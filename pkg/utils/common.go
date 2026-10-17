@@ -29,7 +29,8 @@ func WaitUntil(out io.Writer, poll, timeout time.Duration, checkDone func() erro
 			time.Sleep(poll)
 			return time.Now()
 		},
-		checkDone)
+		checkDone,
+	)
 
 	return err
 }
@@ -102,7 +103,15 @@ func (wr WalkResult) Error() string {
 }
 
 func FindCoreConfig(dir string) WalkResult {
-	err := filepath.WalkDir(dir,
+	// Scope every read to dir so a symlinked manifest cannot be used to read a
+	// file outside of the directory being walked.
+	root, err := os.OpenRoot(dir)
+	if err != nil {
+		return WalkResult{Status: Missing, Path: ""}
+	}
+	defer root.Close()
+
+	err = filepath.WalkDir(dir,
 		func(path string, _ fs.DirEntry, err error) error {
 			if err != nil {
 				return nil
@@ -112,7 +121,18 @@ func FindCoreConfig(dir string) WalkResult {
 				return nil
 			}
 
-			data, err := os.ReadFile(path)
+			relativePath, err := filepath.Rel(dir, path)
+			if err != nil {
+				return nil
+			}
+
+			file, err := root.Open(relativePath)
+			if err != nil {
+				return nil
+			}
+			defer file.Close()
+
+			data, err := io.ReadAll(file)
 			if err != nil {
 				return nil
 			}

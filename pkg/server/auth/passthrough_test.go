@@ -10,8 +10,8 @@ import (
 	"github.com/go-logr/logr"
 	"github.com/google/go-cmp/cmp"
 
-	"github.com/weaveworks/weave-gitops/pkg/server/auth"
-	"github.com/weaveworks/weave-gitops/pkg/testutils"
+	"github.com/zazathomas/weave-gitops/pkg/server/auth"
+	"github.com/zazathomas/weave-gitops/pkg/testutils"
 )
 
 func TestPassthroughPrincipalGetter(t *testing.T) {
@@ -39,10 +39,10 @@ func TestPassthroughPrincipalGetter(t *testing.T) {
 			getter := auth.NewJWTPassthroughCookiePrincipalGetter(logr.Discard(), verifier, cookieName, sessionManager)
 			ts := newTestJWTServerServer(t, cookieName, sessionManager, getter)
 
-			header, _ := ts.execute(t, "/put", &http.Cookie{Name: cookieName, Value: tt.cookie})
+			header, _ := ts.execute(t, "/put", &http.Cookie{Name: cookieName, Value: tt.cookie}) //nolint:gosec // G124: request cookie in a test, never served to a browser
 			sessionToken := extractTokenFromCookie(header.Get("Set-Cookie"))
 
-			_, body := ts.execute(t, "/get", &http.Cookie{Name: "session", Value: sessionToken})
+			_, body := ts.execute(t, "/get", &http.Cookie{Name: "session", Value: sessionToken}) //nolint:gosec // G124: request cookie in a test, never served to a browser
 
 			principal := parseBodyAsPrincipal(t, body)
 			if diff := cmp.Diff(tt.want, principal, allowUnexportedPrincipal()); diff != "" {

@@ -7,6 +7,7 @@ import (
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 )
@@ -121,4 +122,29 @@ func TestAsClientObjectCompatibilityWithTestClient(t *testing.T) {
 	// check the data key
 	data, _, _ := unstructured.NestedStringMap(retrieved.Object, "data")
 	g.Expect(data).To(Equal(map[string]string{"key": "value"}))
+}
+
+// A cluster running an older Flux serves older versions of these kinds. The
+// typed adapters are compiled against one version only, so a request for
+// another version has to be made against that version, not silently sent to the
+// one the adapter happens to use.
+func TestToReconcileableUsesRequestedVersion(t *testing.T) {
+	g := NewGomegaWithT(t)
+
+	compiled := schema.GroupVersionKind{Group: "source.toolkit.fluxcd.io", Version: "v1", Kind: "Bucket"}
+	typed := ToReconcileable(compiled)
+	g.Expect(typed).To(BeAssignableToTypeOf(BucketAdapter{}))
+	g.Expect(typed.GroupVersionKind()).To(Equal(compiled))
+
+	// Flux 2.0 serves Bucket only as v1beta2.
+	legacy := schema.GroupVersionKind{Group: "source.toolkit.fluxcd.io", Version: "v1beta2", Kind: "Bucket"}
+	obj := ToReconcileable(legacy)
+	g.Expect(obj).To(BeAssignableToTypeOf(UnstructuredAdapter{}))
+	g.Expect(obj.GroupVersionKind()).To(Equal(legacy))
+
+	// Flux 2.0 serves HelmRelease only as v2beta1.
+	legacyRelease := schema.GroupVersionKind{Group: "helm.toolkit.fluxcd.io", Version: "v2beta1", Kind: "HelmRelease"}
+	release := ToReconcileable(legacyRelease)
+	g.Expect(release).To(BeAssignableToTypeOf(UnstructuredAdapter{}))
+	g.Expect(release.GroupVersionKind()).To(Equal(legacyRelease))
 }

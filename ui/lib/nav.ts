@@ -22,6 +22,8 @@ export const getParentNavValue = (
     case V2Routes.HelmRepo:
     case V2Routes.Bucket:
     case V2Routes.OCIRepository:
+    case V2Routes.ExternalArtifact:
+    case V2Routes.ArtifactGenerator:
       return V2Routes.Sources;
 
     case V2Routes.FluxRuntime:
@@ -41,6 +43,7 @@ export const getParentNavValue = (
 
     case V2Routes.Notifications:
     case V2Routes.Provider:
+    case V2Routes.Receiver:
       return V2Routes.Notifications;
 
     case V2Routes.UserInfo:
@@ -78,6 +81,8 @@ export const getParentNavRouteValue = (
     case V2Routes.HelmRepo:
     case V2Routes.Bucket:
     case V2Routes.OCIRepository:
+    case V2Routes.ExternalArtifact:
+    case V2Routes.ArtifactGenerator:
       return V2Routes.Sources;
 
     case V2Routes.FluxRuntime:
@@ -93,6 +98,7 @@ export const getParentNavRouteValue = (
 
     case V2Routes.Notifications:
     case V2Routes.Provider:
+    case V2Routes.Receiver:
       return V2Routes.Notifications;
 
     case V2Routes.UserInfo:
@@ -137,6 +143,9 @@ const pageTitles = {
   [V2Routes.Kustomization]: "Kustomization",
   [V2Routes.HelmRelease]: "Helm Release",
   [V2Routes.OCIRepository]: "OCI Repository",
+  [V2Routes.ExternalArtifact]: "External Artifact",
+  [V2Routes.ArtifactGenerator]: "Artifact Generator",
+  [V2Routes.Receiver]: "Receiver",
   [V2Routes.NotImplemented]: "Not Implemented",
 };
 
@@ -184,8 +193,17 @@ export function objectTypeToRoute(t: Kind): V2Routes {
     case Kind.OCIRepository:
       return V2Routes.OCIRepository;
 
+    case Kind.ExternalArtifact:
+      return V2Routes.ExternalArtifact;
+
+    case Kind.ArtifactGenerator:
+      return V2Routes.ArtifactGenerator;
+
     case Kind.Provider:
       return V2Routes.Provider;
+
+    case Kind.Receiver:
+      return V2Routes.Receiver;
 
     default:
       break;

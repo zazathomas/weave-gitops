@@ -4,7 +4,9 @@ import { useFeatureFlags } from "../hooks/featureflags";
 import { Kind } from "../lib/api/core/types.pb";
 import { formatURL, objectTypeToRoute } from "../lib/nav";
 import {
+  ArtifactGenerator,
   Bucket,
+  ExternalArtifact,
   GitRepository,
   HelmRepository,
   OCIRepository,
@@ -116,6 +118,14 @@ function SourcesTable({ className, sources, searchedNamespaces }: Props) {
             break;
           case Kind.OCIRepository:
             text = (s as OCIRepository).url;
+            break;
+          case Kind.ExternalArtifact: {
+            const sourceRef = (s as ExternalArtifact).sourceRef;
+            text = sourceRef ? `${sourceRef.kind}/${sourceRef.name}` : "-";
+            break;
+          }
+          case Kind.ArtifactGenerator:
+            text = (s as ArtifactGenerator).pathPattern || "-";
             break;
           case Kind.HelmRepository:
             text = (s as HelmRepository).url;

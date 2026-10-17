@@ -6,9 +6,9 @@ import (
 
 	"k8s.io/client-go/rest"
 
-	"github.com/weaveworks/weave-gitops/core/clustersmngr/cluster"
-	"github.com/weaveworks/weave-gitops/pkg/kube"
-	"github.com/weaveworks/weave-gitops/pkg/testutils"
+	"github.com/zazathomas/weave-gitops/core/clustersmngr/cluster"
+	"github.com/zazathomas/weave-gitops/pkg/kube"
+	"github.com/zazathomas/weave-gitops/pkg/testutils"
 )
 
 var k8sEnv *testutils.K8sTestEnv

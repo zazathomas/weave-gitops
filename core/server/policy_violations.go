@@ -15,9 +15,9 @@ import (
 	k8sLabels "k8s.io/apimachinery/pkg/labels"
 	sigsClient "sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/weaveworks/weave-gitops/core/clustersmngr"
-	pb "github.com/weaveworks/weave-gitops/pkg/api/core"
-	"github.com/weaveworks/weave-gitops/pkg/server/auth"
+	"github.com/zazathomas/weave-gitops/core/clustersmngr"
+	pb "github.com/zazathomas/weave-gitops/pkg/api/core"
+	"github.com/zazathomas/weave-gitops/pkg/server/auth"
 )
 
 type validationList struct {
@@ -140,7 +140,7 @@ func (cs *coreServer) GetPolicyValidation(ctx context.Context, m *pb.GetPolicyVa
 	if err != nil {
 		return nil, fmt.Errorf("error building selector for events query: %w", err)
 	}
-	opts := []sigsClient.ListOption{}
+	opts := make([]sigsClient.ListOption, 0, 2)
 
 	fields := k8sFields.OneTermEqualSelector("type", "Warning")
 	opts = append(opts, &sigsClient.ListOptions{
@@ -166,7 +166,7 @@ func (cs *coreServer) GetPolicyValidation(ctx context.Context, m *pb.GetPolicyVa
 
 func (cs *coreServer) listValidationsFromEvents(ctx context.Context, clusterClient clustersmngr.Client, clusterName string, extraDetails bool, opts []sigsClient.ListOption) (*validationList, error) {
 	respErrors := []*pb.ListError{}
-	clist := clustersmngr.NewClusteredList(func() sigsClient.ObjectList {
+	clist := clustersmngr.NewClusteredList(func(string) sigsClient.ObjectList {
 		return &v1.EventList{}
 	})
 

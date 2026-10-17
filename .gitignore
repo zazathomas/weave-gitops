@@ -1,99 +1,38 @@
+# Editor / OS
 *~
-bin
-/.idea
 *.iml
-
-.tool-versions
-tools/bin/*
-*.out
-dist/
-.cache
-.parcel-cache
-node_modules
-coverage
-*.lcov
-ginkgo.report
-.deps
-test/library/wego-library-test
-tilt_modules
-.envrc
-
-localhost-key.pem
-localhost.pem
-
-# Ignore generated credentials from google-github-actions/auth
-gha-creds-*.json
-tasks/*.md
-# Ignore VIM's swap files
-*.swp
-
-# .vscode
+/.idea
 .vscode
-
-# macOS
 .DS_Store
-gitops-server.dockerfile
 
-# =============================================================================
-# Python (venv, bytecode, tests, tooling)
-# =============================================================================
-# Virtual environments
-.venv/
-venv/
-env/
-.env/
-tooling/.venv/
-tmp/
-# Bytecode and caches
-__pycache__/
-*.py[cod]
-*$py.class
-*.pyo
-.Python
+# Build output
+bin/
+dist/
+*.out
+*.test
+ginkgo.report
+coverage
+coverage.txt
 
-# Distribution / packaging
-*.egg
-*.egg-info
-*.egg-info/
-**/*.egg-info
-**/*.egg-info/
-.eggs/
-**/.eggs/
-*.manifest
-
-# Coverage and pytest
-.coverage
-.coverage.*
-htmlcov/
-coverage.xml
-.pytest_cache/
-
-# Type checkers and linters
-.mypy_cache/
-.mypy_cache
-.ruff_cache/
-
-# Tox / nox
-.tox/
-.nox/
-
-# Logs and local env (secrets)
-**/*.log
-**/*.logs
-.env
-.env.local
-.env.*.local
-pip-log.txt
-pip-delete-this-directory.txt
-
-# Release workflow artefact
-release-body.md
-
+# Node / UI
+node_modules/
+.parcel-cache/
+.cache/
 .pnp.*
+*.log
 .yarn/*
 !.yarn/patches
 !.yarn/plugins
 !.yarn/releases
-!.yarn/sdks
 !.yarn/versions
-playwright/test-results
+
+# Local environment and secrets
+.env
+.env.local
+.env.*.local
+localhost-key.pem
+localhost.pem
+
+# Agent / workflow scratch state
+.agentic/
+release-body.md

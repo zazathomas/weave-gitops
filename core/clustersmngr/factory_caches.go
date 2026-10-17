@@ -12,8 +12,8 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/weaveworks/weave-gitops/core/clustersmngr/cluster"
-	"github.com/weaveworks/weave-gitops/pkg/server/auth"
+	"github.com/zazathomas/weave-gitops/core/clustersmngr/cluster"
+	"github.com/zazathomas/weave-gitops/pkg/server/auth"
 )
 
 type Clusters struct {
@@ -57,7 +57,7 @@ func (c *Clusters) Set(newClusters []cluster.Cluster) (added, removed []cluster.
 }
 
 func appendClusters(clustersMap map[string]cluster.Cluster, keys []string) []cluster.Cluster {
-	clusters := []cluster.Cluster{}
+	clusters := make([]cluster.Cluster, 0, len(keys))
 
 	for _, key := range keys {
 		clusters = append(clusters, clustersMap[key])
@@ -77,7 +77,7 @@ func (c *Clusters) Hash() string {
 	c.RLock()
 	defer c.RUnlock()
 
-	names := []string{}
+	names := make([]string, 0, len(c.clusters))
 	for _, cluster := range c.clusters {
 		names = append(names, cluster.GetName())
 	}

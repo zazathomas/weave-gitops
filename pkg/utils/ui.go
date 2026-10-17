@@ -8,7 +8,7 @@ import (
 
 	"golang.org/x/term"
 
-	"github.com/weaveworks/weave-gitops/pkg/logger"
+	"github.com/zazathomas/weave-gitops/pkg/logger"
 )
 
 // readPasswordFromStdin reads a password from stdin and returns the input

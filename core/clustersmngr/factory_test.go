@@ -8,16 +8,16 @@ import (
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes"
 
-	"github.com/weaveworks/weave-gitops/core/clustersmngr"
-	"github.com/weaveworks/weave-gitops/core/clustersmngr/cluster"
-	"github.com/weaveworks/weave-gitops/core/clustersmngr/cluster/clusterfakes"
-	"github.com/weaveworks/weave-gitops/core/clustersmngr/clustersmngrfakes"
-	"github.com/weaveworks/weave-gitops/core/clustersmngr/fetcher"
-	"github.com/weaveworks/weave-gitops/core/nsaccess"
-	"github.com/weaveworks/weave-gitops/core/nsaccess/nsaccessfakes"
-	"github.com/weaveworks/weave-gitops/pkg/featureflags"
-	"github.com/weaveworks/weave-gitops/pkg/kube"
-	"github.com/weaveworks/weave-gitops/pkg/server/auth"
+	"github.com/zazathomas/weave-gitops/core/clustersmngr"
+	"github.com/zazathomas/weave-gitops/core/clustersmngr/cluster"
+	"github.com/zazathomas/weave-gitops/core/clustersmngr/cluster/clusterfakes"
+	"github.com/zazathomas/weave-gitops/core/clustersmngr/clustersmngrfakes"
+	"github.com/zazathomas/weave-gitops/core/clustersmngr/fetcher"
+	"github.com/zazathomas/weave-gitops/core/nsaccess"
+	"github.com/zazathomas/weave-gitops/core/nsaccess/nsaccessfakes"
+	"github.com/zazathomas/weave-gitops/pkg/featureflags"
+	"github.com/zazathomas/weave-gitops/pkg/kube"
+	"github.com/zazathomas/weave-gitops/pkg/server/auth"
 )
 
 func TestGetImpersonatedClient(t *testing.T) {
@@ -347,7 +347,7 @@ func TestUpdateClusters(t *testing.T) {
 	g.Expect(watcher).ToNot(BeNil())
 
 	clusterNames := func(c []cluster.Cluster) []string {
-		names := []string{}
+		names := make([]string, 0, len(c))
 		for _, v := range c {
 			names = append(names, v.GetName())
 		}

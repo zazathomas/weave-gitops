@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/weaveworks/weave-gitops/pkg/utils"
+	"github.com/zazathomas/weave-gitops/pkg/utils"
 )
 
 // CodeVerifier is for PKCE OAuth workflows. This will generate a random string with a random length.

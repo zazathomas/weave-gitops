@@ -8,9 +8,9 @@ import (
 	"k8s.io/apimachinery/pkg/util/rand"
 	"k8s.io/client-go/rest"
 
-	"github.com/weaveworks/weave-gitops/pkg/kube"
-	"github.com/weaveworks/weave-gitops/pkg/server/auth"
-	"github.com/weaveworks/weave-gitops/pkg/testutils"
+	"github.com/zazathomas/weave-gitops/pkg/kube"
+	"github.com/zazathomas/weave-gitops/pkg/server/auth"
+	"github.com/zazathomas/weave-gitops/pkg/testutils"
 )
 
 func TestSingleCluster(t *testing.T) {
@@ -57,7 +57,7 @@ func TestClientConfigWithUser(t *testing.T) {
 			expectedToken:         "",
 			expectedImpersonation: &rest.ImpersonationConfig{UserName: "Juan", Groups: []string{"team-a"}},
 		},
-		{
+		{ //nolint:gosec // G101: token literal in a test fixture, not a real credential
 			name:                  "good token and cluster in: good config out",
 			principal:             auth.NewUserPrincipal(auth.Token("some-token-i-guess")),
 			expectedErr:           nil,

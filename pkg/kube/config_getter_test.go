@@ -6,8 +6,8 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"k8s.io/client-go/rest"
 
-	"github.com/weaveworks/weave-gitops/pkg/kube"
-	"github.com/weaveworks/weave-gitops/pkg/server/auth"
+	"github.com/zazathomas/weave-gitops/pkg/kube"
+	"github.com/zazathomas/weave-gitops/pkg/server/auth"
 )
 
 var _ kube.ConfigGetter = (*kube.ImpersonatingConfigGetter)(nil)

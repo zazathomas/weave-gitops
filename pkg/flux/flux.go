@@ -3,8 +3,8 @@ package flux
 import (
 	"fmt"
 
-	"github.com/weaveworks/weave-gitops/pkg/gitproviders"
-	"github.com/weaveworks/weave-gitops/pkg/runner"
+	"github.com/zazathomas/weave-gitops/pkg/gitproviders"
+	"github.com/zazathomas/weave-gitops/pkg/runner"
 )
 
 //go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -generate

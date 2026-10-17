@@ -17,11 +17,12 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/client-go/util/retry"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/weaveworks/weave-gitops/core/fluxsync"
-	pb "github.com/weaveworks/weave-gitops/pkg/api/core"
-	"github.com/weaveworks/weave-gitops/pkg/kube"
+	"github.com/zazathomas/weave-gitops/core/fluxsync"
+	pb "github.com/zazathomas/weave-gitops/pkg/api/core"
+	"github.com/zazathomas/weave-gitops/pkg/kube"
 )
 
 func TestSync(t *testing.T) {
@@ -252,91 +253,99 @@ func TestSync(t *testing.T) {
 	}
 }
 
+// simulateReconcile stands in for a controller reconciling an object, which it
+// does by writing status.lastHandledReconcileRequest. The test calls this on a
+// ticker while another goroutine may be syncing the same object, so the two
+// writers collide. Real controllers retry on conflict, so this does too;
+// without it the loser of the race fails the test with "the object has been
+// modified".
 func simulateReconcile(ctx context.Context, k client.Client, name types.NamespacedName, o client.Object) error {
-	switch obj := o.(type) {
-	case *helmv2.HelmRelease:
-		if err := k.Get(ctx, name, obj); err != nil {
-			return err
+	return retry.RetryOnConflict(retry.DefaultBackoff, func() error {
+		switch obj := o.(type) {
+		case *helmv2.HelmRelease:
+			if err := k.Get(ctx, name, obj); err != nil {
+				return err
+			}
+
+			obj.Status.SetLastHandledReconcileRequest(time.Now().Format(time.RFC3339Nano))
+
+			return k.Status().Update(ctx, obj)
+
+		case *kustomizev1.Kustomization:
+			if err := k.Get(ctx, name, obj); err != nil {
+				return err
+			}
+
+			obj.Status.SetLastHandledReconcileRequest(time.Now().Format(time.RFC3339Nano))
+
+			return k.Status().Update(ctx, obj)
+
+		case *sourcev1.Bucket:
+			if err := k.Get(ctx, name, obj); err != nil {
+				return err
+			}
+
+			obj.Status.SetLastHandledReconcileRequest(time.Now().Format(time.RFC3339Nano))
+
+			return k.Status().Update(ctx, obj)
+
+		case *sourcev1.GitRepository:
+			if err := k.Get(ctx, name, obj); err != nil {
+				return err
+			}
+
+			obj.Status.SetLastHandledReconcileRequest(time.Now().Format(time.RFC3339Nano))
+
+			return k.Status().Update(ctx, obj)
+
+		case *sourcev1.HelmChart:
+			if err := k.Get(ctx, name, obj); err != nil {
+				return err
+			}
+
+			obj.Status.SetLastHandledReconcileRequest(time.Now().Format(time.RFC3339Nano))
+
+			return k.Status().Update(ctx, obj)
+
+		case *sourcev1.HelmRepository:
+			if err := k.Get(ctx, name, obj); err != nil {
+				return err
+			}
+
+			obj.Status.SetLastHandledReconcileRequest(time.Now().Format(time.RFC3339Nano))
+
+			return k.Status().Update(ctx, obj)
+
+		case *sourcev1.OCIRepository:
+			if err := k.Get(ctx, name, obj); err != nil {
+				return err
+			}
+
+			obj.Status.SetLastHandledReconcileRequest(time.Now().Format(time.RFC3339Nano))
+
+			return k.Status().Update(ctx, obj)
+
+		case *reflectorv1.ImageRepository:
+			if err := k.Get(ctx, name, obj); err != nil {
+				return err
+			}
+
+			obj.Status.SetLastHandledReconcileRequest(time.Now().Format(time.RFC3339Nano))
+
+			return k.Status().Update(ctx, obj)
+
+		case *imgautomationv1.ImageUpdateAutomation:
+			if err := k.Get(ctx, name, obj); err != nil {
+				return err
+			}
+
+			obj.Status.SetLastHandledReconcileRequest(time.Now().Format(time.RFC3339Nano))
+
+			return k.Status().Update(ctx, obj)
 		}
 
-		obj.Status.SetLastHandledReconcileRequest(time.Now().Format(time.RFC3339Nano))
-
-		return k.Status().Update(ctx, obj)
-
-	case *kustomizev1.Kustomization:
-		if err := k.Get(ctx, name, obj); err != nil {
-			return err
-		}
-
-		obj.Status.SetLastHandledReconcileRequest(time.Now().Format(time.RFC3339Nano))
-
-		return k.Status().Update(ctx, obj)
-
-	case *sourcev1.Bucket:
-		if err := k.Get(ctx, name, obj); err != nil {
-			return err
-		}
-
-		obj.Status.SetLastHandledReconcileRequest(time.Now().Format(time.RFC3339Nano))
-
-		return k.Status().Update(ctx, obj)
-
-	case *sourcev1.GitRepository:
-		if err := k.Get(ctx, name, obj); err != nil {
-			return err
-		}
-
-		obj.Status.SetLastHandledReconcileRequest(time.Now().Format(time.RFC3339Nano))
-
-		return k.Status().Update(ctx, obj)
-
-	case *sourcev1.HelmChart:
-		if err := k.Get(ctx, name, obj); err != nil {
-			return err
-		}
-
-		obj.Status.SetLastHandledReconcileRequest(time.Now().Format(time.RFC3339Nano))
-
-		return k.Status().Update(ctx, obj)
-
-	case *sourcev1.HelmRepository:
-		if err := k.Get(ctx, name, obj); err != nil {
-			return err
-		}
-
-		obj.Status.SetLastHandledReconcileRequest(time.Now().Format(time.RFC3339Nano))
-
-		return k.Status().Update(ctx, obj)
-
-	case *sourcev1.OCIRepository:
-		if err := k.Get(ctx, name, obj); err != nil {
-			return err
-		}
-
-		obj.Status.SetLastHandledReconcileRequest(time.Now().Format(time.RFC3339Nano))
-
-		return k.Status().Update(ctx, obj)
-
-	case *reflectorv1.ImageRepository:
-		if err := k.Get(ctx, name, obj); err != nil {
-			return err
-		}
-
-		obj.Status.SetLastHandledReconcileRequest(time.Now().Format(time.RFC3339Nano))
-
-		return k.Status().Update(ctx, obj)
-
-	case *imgautomationv1.ImageUpdateAutomation:
-		if err := k.Get(ctx, name, obj); err != nil {
-			return err
-		}
-
-		obj.Status.SetLastHandledReconcileRequest(time.Now().Format(time.RFC3339Nano))
-
-		return k.Status().Update(ctx, obj)
-	}
-
-	return errors.New("simulating reconcile: unsupported type")
+		return errors.New("simulating reconcile: unsupported type")
+	})
 }
 
 func makeGitRepo(name string, ns corev1.Namespace) *sourcev1.GitRepository {

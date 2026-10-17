@@ -7,8 +7,8 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 
-	"github.com/weaveworks/weave-gitops/pkg/server/auth"
-	"github.com/weaveworks/weave-gitops/pkg/testutils"
+	"github.com/zazathomas/weave-gitops/pkg/server/auth"
+	"github.com/zazathomas/weave-gitops/pkg/testutils"
 )
 
 func TestPrincipalFromClaims(t *testing.T) {

@@ -4,7 +4,7 @@ package gitprovidersfakes
 import (
 	"sync"
 
-	"github.com/weaveworks/weave-gitops/pkg/gitproviders"
+	"github.com/zazathomas/weave-gitops/pkg/gitproviders"
 )
 
 type FakeClient struct {

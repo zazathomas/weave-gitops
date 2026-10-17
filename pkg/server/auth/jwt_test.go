@@ -17,8 +17,8 @@ import (
 	"github.com/google/go-cmp/cmp"
 	. "github.com/onsi/gomega"
 
-	"github.com/weaveworks/weave-gitops/pkg/server/auth"
-	"github.com/weaveworks/weave-gitops/pkg/testutils"
+	"github.com/zazathomas/weave-gitops/pkg/server/auth"
+	"github.com/zazathomas/weave-gitops/pkg/testutils"
 )
 
 func TestJWTCookiePrincipalGetter(t *testing.T) {
@@ -59,10 +59,10 @@ func TestJWTCookiePrincipalGetter(t *testing.T) {
 
 			ts := newTestJWTServerServer(t, cookieName, sessionManager, getter)
 
-			header, _ := ts.execute(t, "/put", &http.Cookie{Name: cookieName, Value: tt.cookie})
+			header, _ := ts.execute(t, "/put", &http.Cookie{Name: cookieName, Value: tt.cookie}) //nolint:gosec // G124: request cookie in a test, never served to a browser
 			sessionToken := extractTokenFromCookie(header.Get("Set-Cookie"))
 
-			_, body := ts.execute(t, "/get", &http.Cookie{Name: "session", Value: sessionToken})
+			_, body := ts.execute(t, "/get", &http.Cookie{Name: "session", Value: sessionToken}) //nolint:gosec // G124: request cookie in a test, never served to a browser
 
 			principal := parseBodyAsPrincipal(t, body)
 			if diff := cmp.Diff(tt.want, principal, allowUnexportedPrincipal()); diff != "" {
@@ -230,7 +230,7 @@ func parseBodyAsPrincipal(t *testing.T, s string) *auth.UserPrincipal {
 	}
 
 	groups := func(g []any) []string {
-		r := []string{}
+		r := make([]string, 0, len(g))
 		for _, v := range g {
 			r = append(r, v.(string))
 		}

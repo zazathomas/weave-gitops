@@ -18,9 +18,9 @@ import (
 
 	pacv2beta2 "github.com/weaveworks/policy-agent/api/v2beta2"
 
-	"github.com/weaveworks/weave-gitops/core/clustersmngr"
-	pb "github.com/weaveworks/weave-gitops/pkg/api/core"
-	"github.com/weaveworks/weave-gitops/pkg/server/auth"
+	"github.com/zazathomas/weave-gitops/core/clustersmngr"
+	pb "github.com/zazathomas/weave-gitops/pkg/api/core"
+	"github.com/zazathomas/weave-gitops/pkg/server/auth"
 )
 
 const (
@@ -59,7 +59,7 @@ func getPolicyParamValue(param pacv2beta2.PolicyParameters, policyID string) (*a
 		anyValue, err = anypb.New(value)
 	case "boolean":
 		// fixes CWE-190 CWE-681
-		// https://github.com/weaveworks/weave-gitops/security/code-scanning/3886
+		// https://github.com/zazathomas/weave-gitops/security/code-scanning/3886
 		boolValue, convErr := strconv.ParseBool(string(param.Value.Raw))
 		if convErr != nil {
 			err = convErr
@@ -173,7 +173,7 @@ func (cs *coreServer) ListPolicies(ctx context.Context, m *pb.ListPoliciesReques
 	var continueToken string
 	var lists map[string][]client.ObjectList
 
-	clist := clustersmngr.NewClusteredList(func() client.ObjectList {
+	clist := clustersmngr.NewClusteredList(func(string) client.ObjectList {
 		return &pacv2beta2.PolicyList{}
 	})
 

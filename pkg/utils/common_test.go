@@ -27,7 +27,8 @@ var _ = Describe("Test common utils", func() {
 				},
 				func() error {
 					return nil
-				})
+				},
+			)
 			Expect(resultTime.Sub(start)).To(BeNumerically("==", 0))
 			Expect(err).NotTo(HaveOccurred())
 			Expect(output.String()).To(BeEmpty())
@@ -52,7 +53,8 @@ var _ = Describe("Test common utils", func() {
 						return fmt.Errorf("some error")
 					}
 					return nil
-				})
+				},
+			)
 			Expect(resultTime.Sub(start)).Should(BeNumerically("==", time.Millisecond))
 			Expect(err).NotTo(HaveOccurred())
 			Expect(output.String()).To(Equal("error occurred some error, retrying in 1ms\n"))
@@ -72,7 +74,8 @@ var _ = Describe("Test common utils", func() {
 				},
 				func() error {
 					return fmt.Errorf("some error")
-				})
+				},
+			)
 			Expect(resultTime.Sub(start)).Should(BeNumerically("==", time.Second*2))
 			Expect(err).To(MatchError("timeout reached 2s"))
 			Expect(output.String()).Should(Equal(`error occurred some error, retrying in 1s

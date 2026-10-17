@@ -11,7 +11,7 @@ import (
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 
-	l "github.com/weaveworks/weave-gitops/core/logger"
+	l "github.com/zazathomas/weave-gitops/core/logger"
 )
 
 func TestNewFromConfigCreatesDevLogger(t *testing.T) {

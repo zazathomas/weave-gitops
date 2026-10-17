@@ -1,4 +1,5 @@
 import { AlertListErrors } from "./components/AlertListErrors";
+import ArtifactGeneratorDetail from "./components/ArtifactGeneratorDetail";
 import type { ReconciledObjectsAutomation } from "./components/AutomationDetail";
 import AutomationsTable from "./components/AutomationsTable";
 import BucketDetail from "./components/BucketDetail";
@@ -16,6 +17,7 @@ import DetailModal from "./components/DetailModal";
 import DirectedGraph from "./components/DirectedGraph";
 import ErrorList from "./components/ErrorList";
 import EventsTable from "./components/EventsTable";
+import ExternalArtifactDetail from "./components/ExternalArtifactDetail";
 import Flex from "./components/Flex";
 import FluxObjectsTable from "./components/FluxObjectsTable";
 import FluxRuntime from "./components/FluxRuntime";
@@ -62,6 +64,8 @@ import { PolicyViolationsList } from "./components/Policies/PolicyViolations/Tab
 import HeaderRows, { RowHeader } from "./components/Policies/Utils/HeaderRows";
 import Severity from "./components/Policies/Utils/Severity";
 import ProviderDetail from "./components/ProviderDetail";
+import ReceiverDetail from "./components/ReceiverDetail";
+import ReceiversTable from "./components/ReceiversTable";
 import ReconciledObjectsTable from "./components/ReconciledObjectsTable";
 import ReconciliationGraph, { Graph } from "./components/ReconciliationGraph";
 import RequestStateHandler from "./components/RequestStateHandler";
@@ -103,7 +107,11 @@ import {
 import { useCheckCRDInstalled } from "./hooks/imageautomation";
 import { useGetInventory } from "./hooks/inventory";
 import useNavigation from "./hooks/navigation";
-import { useListAlerts, useListProviders } from "./hooks/notifications";
+import {
+  useListAlerts,
+  useListProviders,
+  useListReceivers,
+} from "./hooks/notifications";
 import { useGetObject, useListObjects } from "./hooks/objects";
 import { useListSources } from "./hooks/sources";
 import { Core as coreClient } from "./lib/api/core/core.pb";
@@ -112,8 +120,10 @@ import { PARENT_CHILD_LOOKUP } from "./lib/graph";
 import { formatURL, getParentNavRouteValue } from "./lib/nav";
 import {
   Alert,
+  ArtifactGenerator,
   type Automation,
   Bucket,
+  ExternalArtifact,
   FluxObject,
   GitRepository,
   HelmChart,
@@ -125,6 +135,7 @@ import {
   Kustomization,
   OCIRepository,
   Provider,
+  Receiver,
 } from "./lib/objects";
 import { baseTheme, muiTheme, theme } from "./lib/theme";
 import { showInterval } from "./lib/time";
@@ -146,6 +157,8 @@ export {
   Alert,
   AppContext,
   AlertListErrors,
+  ArtifactGenerator,
+  ArtifactGeneratorDetail,
   AppContextProvider,
   Auth,
   AuthCheck,
@@ -168,6 +181,8 @@ export {
   DirectedGraph,
   ErrorList,
   EventsTable,
+  ExternalArtifact,
+  ExternalArtifactDetail,
   Flex,
   FluxObject,
   FluxObjectsTable,
@@ -229,6 +244,9 @@ export {
   PolicyViolationsList,
   Provider,
   ProviderDetail,
+  Receiver,
+  ReceiverDetail,
+  ReceiversTable,
   ReconciledObjectsAutomation,
   ReconciledObjectsTable,
   ReconciliationGraph,
@@ -285,6 +303,7 @@ export {
   useListRuntimeObjects,
   useListObjects,
   useListProviders,
+  useListReceivers,
   useListSources,
   useNavigation,
   useSyncFluxObject,

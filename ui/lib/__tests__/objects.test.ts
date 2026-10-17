@@ -1,7 +1,9 @@
 import { pod, rs } from "../__fixtures__/graph";
 import { Kind } from "../api/core/types.pb";
 import {
+  ArtifactGenerator,
   Bucket,
+  ExternalArtifact,
   FluxObject,
   GitRepository,
   HelmChart,
@@ -9,6 +11,7 @@ import {
   HelmRepository,
   Kustomization,
   OCIRepository,
+  Receiver,
 } from "../objects";
 
 describe("objects lib", () => {
@@ -491,5 +494,73 @@ describe("objects lib", () => {
         expect(obj.images).toEqual([]);
       });
     });
+  });
+});
+
+describe("new Flux CRD object models", () => {
+  it("defaults an external artifact source ref to its own namespace", () => {
+    const obj = new ExternalArtifact({
+      payload: JSON.stringify({
+        spec: { sourceRef: { kind: "OCIRepository", name: "podinfo-oci" } },
+        metadata: { name: "generated-app", namespace: "flux-system" },
+      }),
+    });
+
+    expect(obj.sourceRef).toEqual({
+      kind: "OCIRepository",
+      name: "podinfo-oci",
+      namespace: "flux-system",
+    });
+  });
+
+  it("reads artifact generator sources, path pattern and outputs", () => {
+    const obj = new ArtifactGenerator({
+      payload: JSON.stringify({
+        spec: {
+          sources: [
+            { alias: "app", kind: "OCIRepository", name: "podinfo-oci" },
+          ],
+          pathPattern: "apps/{app}",
+          artifacts: [{ name: "podinfo" }],
+        },
+      }),
+    });
+
+    expect(obj.sources).toEqual([
+      { alias: "app", kind: "OCIRepository", name: "podinfo-oci" },
+    ]);
+    expect(obj.pathPattern).toEqual("apps/{app}");
+    expect(obj.outputArtifacts).toEqual([{ name: "podinfo" }]);
+  });
+
+  it("falls back to the last attempted revision for HelmReleases", () => {
+    // Flux 2.9 removed status.lastAppliedRevision from HelmRelease.
+    const attemptedOnly = new HelmRelease({
+      payload: JSON.stringify({ status: { lastAttemptedRevision: "6.5.0" } }),
+    });
+    expect(attemptedOnly.lastAppliedRevision).toEqual("6.5.0");
+
+    const both = new HelmRelease({
+      payload: JSON.stringify({
+        status: { lastAppliedRevision: "6.4.0", lastAttemptedRevision: "6.5.0" },
+      }),
+    });
+    expect(both.lastAppliedRevision).toEqual("6.4.0");
+
+    const empty = new HelmRelease({ payload: JSON.stringify({ status: {} }) });
+    expect(empty.lastAppliedRevision).toEqual("");
+  });
+
+  it("reads the receiver type, webhook path and secret", () => {
+    const obj = new Receiver({
+      payload: JSON.stringify({
+        spec: { type: "github", secretRef: { name: "receiver-token" } },
+        status: { webhookPath: "/hook/abc" },
+      }),
+    });
+
+    expect(obj.receiverType).toEqual("github");
+    expect(obj.webhookPath).toEqual("/hook/abc");
+    expect(obj.secretRef).toEqual("receiver-token");
   });
 });

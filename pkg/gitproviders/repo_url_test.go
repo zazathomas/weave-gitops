@@ -15,7 +15,7 @@ var _ = DescribeTable("detectGitProviderFromURL", func(input string, expected Gi
 	Expect(err).NotTo(HaveOccurred())
 	Expect(result).To(Equal(expected))
 },
-	Entry("ssh+github", "ssh://git@github.com/weaveworks/weave-gitops.git", GitProviderGitHub),
+	Entry("ssh+github", "ssh://git@github.com/zazathomas/weave-gitops.git", GitProviderGitHub),
 	Entry("ssh+gitlab", "ssh://git@gitlab.com/weaveworks/weave-gitops.git", GitProviderGitLab),
 	Entry("https+bitbucket", "https://bitbucket.weave.works/scm/wg/config.git", GitProviderBitBucketServer),
 )
@@ -28,7 +28,7 @@ var _ = Describe("get owner from url", func() {
 		Expect(err).NotTo(HaveOccurred())
 		Expect(result).To(Equal(expected))
 	},
-		Entry("github", "ssh://git@github.com/weaveworks/weave-gitops.git", GitProviderGitHub, "weaveworks"),
+		Entry("github", "ssh://git@github.com/zazathomas/weave-gitops.git", GitProviderGitHub, "zazathomas"),
 		Entry("gitlab", "ssh://git@gitlab.com/weaveworks/weave-gitops.git", GitProviderGitLab, "weaveworks"),
 		Entry("gitlab", "ssh://git@gitlab.com/weaveworks/infra/weave-gitops.git", GitProviderGitLab, "weaveworks/infra"),
 		Entry("gitlab", "ssh://git@gitlab.com/weaveworks/infra/dev/weave-gitops.git", GitProviderGitLab, "weaveworks/infra/dev"),
@@ -135,7 +135,8 @@ var _ = DescribeTable("NewRepoURL", func(input, gitProviderEnv string, expected 
 			name:     "podinfo-deploy",
 			provider: "gitlab",
 			protocol: RepositoryURLProtocolSSH,
-		}),
+		},
+	),
 	Entry("azure ssh clone", "git@ssh.dev.azure.com:v3/weaveworks/weave-gitops-integration/config", "", expectedRepoURL{
 		s:        "ssh://git@ssh.dev.azure.com/v3/weaveworks/weave-gitops-integration/config.git",
 		owner:    "weaveworks/weave-gitops-integration",

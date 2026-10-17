@@ -87,10 +87,11 @@ func buildGitProvider(config Config) (gitprovider.Client, string, error) {
 			return nil, "", fmt.Errorf("the BitBucket Server git provider requires a username to be set")
 		}
 
-		opts := []gitprovider.ClientOption{
+		opts := make([]gitprovider.ClientOption, 0, 3)
+		opts = append(opts,
 			gitprovider.WithOAuth2Token(config.Token),
 			gitprovider.WithConditionalRequests(true),
-		}
+		)
 
 		hostname := "https://" + config.Hostname
 		opts = append(opts, gitprovider.WithDomain(hostname))

@@ -12,8 +12,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	ctrlclient "sigs.k8s.io/controller-runtime/pkg/client/fake"
 
-	"github.com/weaveworks/weave-gitops/pkg/featureflags"
-	"github.com/weaveworks/weave-gitops/pkg/server/auth"
+	"github.com/zazathomas/weave-gitops/pkg/featureflags"
+	"github.com/zazathomas/weave-gitops/pkg/server/auth"
 )
 
 func TestInitAuthServer(t *testing.T) {
@@ -61,7 +61,7 @@ func TestInitAuthServer(t *testing.T) {
 			clusterUserFlag: "",
 			oidcEnabledFlag: "true",
 		},
-		{
+		{ //nolint:gosec // G101: "secrets" field name in a test fixture, not a real credential
 			name:        "OIDC alt-secret",
 			authMethods: []string{"oidc"},
 			secrets: []*corev1.Secret{

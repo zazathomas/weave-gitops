@@ -4,24 +4,59 @@ import Alert from "../../components/Alert";
 import ErrorList from "../../components/ErrorList";
 import NotificationsTable from "../../components/NotificationsTable";
 import Page from "../../components/Page";
-import { useListProviders } from "../../hooks/notifications";
+import ReceiversTable from "../../components/ReceiversTable";
+import SubRouterTabs, { RouterTab } from "../../components/SubRouterTabs";
+import { useListProviders, useListReceivers } from "../../hooks/notifications";
 type Props = {
   className?: string;
 };
 
 function Notifications({ className }: Props) {
-  const { data, isLoading, error } = useListProviders();
+  const {
+    data: providers,
+    isLoading: providersLoading,
+    error: providersError,
+  } = useListProviders();
+  const {
+    data: receivers,
+    isLoading: receiversLoading,
+    error: receiversError,
+  } = useListReceivers();
+
   return (
     <Page
       className={className}
-      loading={isLoading}
+      loading={providersLoading || receiversLoading}
       path={[{ label: "Notifications" }]}
     >
-      {error && (
-        <Alert severity="error" title="Request Error" message={error.message} />
-      )}
-      <ErrorList errors={data?.errors} />
-      <NotificationsTable rows={data?.objects} />
+      <SubRouterTabs rootPath="providers">
+        <RouterTab name="Providers" path="providers">
+          <>
+            {providersError && (
+              <Alert
+                severity="error"
+                title="Request Error"
+                message={providersError.message}
+              />
+            )}
+            <ErrorList errors={providers?.errors} />
+            <NotificationsTable rows={providers?.objects} />
+          </>
+        </RouterTab>
+        <RouterTab name="Receivers" path="receivers">
+          <>
+            {receiversError && (
+              <Alert
+                severity="error"
+                title="Request Error"
+                message={receiversError.message}
+              />
+            )}
+            <ErrorList errors={receivers?.errors} />
+            <ReceiversTable rows={receivers?.objects} />
+          </>
+        </RouterTab>
+      </SubRouterTabs>
     </Page>
   );
 }

@@ -19,10 +19,10 @@ import (
 	_ "sigs.k8s.io/controller-runtime/pkg/log"
 	_ "sigs.k8s.io/controller-runtime/pkg/log/zap"
 
-	"github.com/weaveworks/weave-gitops/core/clustersmngr/cluster"
-	"github.com/weaveworks/weave-gitops/core/nsaccess"
-	"github.com/weaveworks/weave-gitops/pkg/featureflags"
-	"github.com/weaveworks/weave-gitops/pkg/server/auth"
+	"github.com/zazathomas/weave-gitops/core/clustersmngr/cluster"
+	"github.com/zazathomas/weave-gitops/core/nsaccess"
+	"github.com/zazathomas/weave-gitops/pkg/featureflags"
+	"github.com/zazathomas/weave-gitops/pkg/server/auth"
 )
 
 //go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -generate
@@ -60,21 +60,24 @@ var (
 			Subsystem: "clustersmngr",
 			Name:      "update_clusters_total",
 			Help:      "The number of times clusters have been refreshed",
-		})
+		},
+	)
 	opsClustersCount = prometheus.NewGauge(
 		prometheus.GaugeOpts{
 			Namespace: "gitops",
 			Subsystem: "clustersmngr",
 			Name:      "clusters_total",
 			Help:      "The number of clusters currently being tracked",
-		})
+		},
+	)
 	opsUpdateNamespaces = prometheus.NewCounter(
 		prometheus.CounterOpts{
 			Namespace: "gitops",
 			Subsystem: "clustersmngr",
 			Name:      "update_namespaces_total",
 			Help:      "The number of times namespaces have been refreshed",
-		})
+		},
+	)
 	opsNamespacesCount = prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
 			Namespace: "gitops",
@@ -363,7 +366,7 @@ func (cf *clustersManager) updateNamespacesWithClient(ctx context.Context, creat
 
 	cf.syncCaches()
 
-	nsList := NewClusteredList(func() client.ObjectList {
+	nsList := NewClusteredList(func(string) client.ObjectList {
 		return &v1.NamespaceList{}
 	})
 

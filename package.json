@@ -1,6 +1,6 @@
 {
-  "name": "@weaveworks/weave-gitops",
-  "version": "0.39.1-rc.1",
+  "name": "@zazathomas/weave-gitops",
+  "version": "0.40.0",
   "description": "Weave GitOps core",
   "targets": {
     "default": {
@@ -36,14 +36,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/weaveworks/weave-gitops.git"
+    "url": "git://github.com/zazathomas/weave-gitops.git"
   },
   "bugs": {
-    "url": "https://github.com/weaveworks/weave-gitops/issues"
+    "url": "https://github.com/zazathomas/weave-gitops/issues"
   },
-  "homepage": "https://github.com/weaveworks/weave-gitops#readme",
+  "homepage": "https://github.com/zazathomas/weave-gitops#readme",
   "peerDependencies": {
-    "lodash": "^4.17.23",
+    "lodash": "^4.18.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-toastify": "^7.0.4",
@@ -60,22 +60,22 @@
     "d3": "^7.9.0",
     "d3-dag": "^1.1.0",
     "history": "^5.3.0",
-    "http-proxy-middleware": "^3.0.5",
+    "http-proxy-middleware": "^3.0.7",
     "install": "^0.13.0",
     "jest-canvas-mock": "^2.5.2",
     "js-sha3": "0.9.3",
-    "js-yaml": "^4.1.1",
-    "lodash": "^4.17.23",
+    "js-yaml": "^4.3.2",
+    "lodash": "^4.18.1",
     "luxon": "^3.7.2",
     "mnemonic-browser": "^0.0.1",
-    "postcss": "^8.5.6",
+    "postcss": "^8.5.30",
     "query-string": "^9.3.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-is": "^19.0.0",
     "react-lottie-player": "^2.1.0",
     "react-markdown": "^10.1.0",
-    "react-router": "^7.12.0",
+    "react-router": "^7.18.4",
     "react-syntax-highlighter": "^15.6.1",
     "react-toastify": "^11.0.5",
     "remark-gfm": "^4.0.1",

@@ -16,7 +16,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	pb "github.com/weaveworks/weave-gitops/pkg/api/core"
+	pb "github.com/zazathomas/weave-gitops/pkg/api/core"
 )
 
 type mockGet struct {
@@ -195,7 +195,8 @@ func TestGitOpsRunLogs(t *testing.T) {
 			tt.args.nextToken,
 			tt.args.minio,
 			tt.args.bucketName,
-			"")
+			"",
+		)
 		g.Expect(err != nil).To(Equal(tt.wantErr))
 		g.Expect(got).To(Equal(tt.want))
 		g.Expect(token).To(Equal(tt.wantToken))

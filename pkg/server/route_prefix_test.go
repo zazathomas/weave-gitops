@@ -1,7 +1,6 @@
 package server
 
 import (
-	"bytes"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -22,8 +21,10 @@ func TestWithRoutePrefix(t *testing.T) {
 	}{
 		// redirect from root to route prefix for nice UX in the browser
 		{path: "/", expected: http.StatusFound, content: "<a href=\"/test/\">Found</a>.\n\n"},
-		// Redirects to trailing slash, nice for the browser
-		{path: "/test", expected: http.StatusMovedPermanently, content: "<a href=\"/test/\">Moved Permanently</a>.\n\n"},
+		// Redirects to trailing slash, nice for the browser.
+		// Go 1.26 changed ServeMux's built-in trailing-slash redirect from
+		// 301 Moved Permanently to 307 Temporary Redirect.
+		{path: "/test", expected: http.StatusTemporaryRedirect, content: "<a href=\"/test/\">Temporary Redirect</a>.\n\n"},
 		// We didn't add a root handler
 		{path: "/test/", expected: http.StatusNotFound},
 		// access the mounted handler
@@ -74,18 +75,53 @@ func TestGetBaseHref(t *testing.T) {
 }
 
 func TestInjectHTMLBaseTag(t *testing.T) {
-	// if html has a head tag then we should inject a base tag
-	htmlWithHead := []byte("<html><head></head><body></body></html>")
-	expected := []byte("<html><head><base href=\"/test/\"></head><body></body></html>")
-	actual := InjectHTMLBaseTag(htmlWithHead, "/test/")
-	if !bytes.Equal(expected, actual) {
-		t.Errorf("expected %s, got %s", expected, actual)
+	testCases := []struct {
+		name     string
+		html     string
+		baseHref string
+		expected string
+	}{
+		{
+			name:     "html with a head tag",
+			html:     "<html><head></head><body></body></html>",
+			baseHref: "/test/",
+			expected: `<html><head><base href="/test/"></head><body></body></html>`,
+		},
+		{
+			name:     "head tag with attributes",
+			html:     `<html><head lang="en"></head><body></body></html>`,
+			baseHref: "/",
+			expected: `<html><head lang="en"><base href="/"></head><body></body></html>`,
+		},
+		{
+			// The production UI build strips <head>, which used to mean no base
+			// tag was injected at all and deep links loaded assets from the
+			// wrong path.
+			name:     "html without a head tag, as produced by the production UI build",
+			html:     `<!DOCTYPE html><html lang=en><link rel=stylesheet href=ui.css><body><div id=app></div></body></html>`,
+			baseHref: "/weave-gitops/",
+			expected: `<!DOCTYPE html><html lang=en><base href="/weave-gitops/"><link rel=stylesheet href=ui.css><body><div id=app></div></body></html>`,
+		},
+		{
+			name:     "falls back to prepending when there is no html or head tag",
+			html:     `<div id=app></div>`,
+			baseHref: "/",
+			expected: `<base href="/"><div id=app></div>`,
+		},
+		{
+			name:     "does not mistake a header element for head",
+			html:     `<html><header>x</header><body></body></html>`,
+			baseHref: "/",
+			expected: `<html><base href="/"><header>x</header><body></body></html>`,
+		},
 	}
 
-	// if html doesn't have a head tag then we should not inject a base tag
-	htmlWithoutHead := []byte("<html><body></body></html>")
-	actual = InjectHTMLBaseTag(htmlWithoutHead, "/test/")
-	if !bytes.Equal(htmlWithoutHead, actual) {
-		t.Errorf("expected %s, got %s", htmlWithoutHead, actual)
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			actual := InjectHTMLBaseTag([]byte(tc.html), tc.baseHref)
+			if string(actual) != tc.expected {
+				t.Errorf("expected %s, got %s", tc.expected, actual)
+			}
+		})
 	}
 }

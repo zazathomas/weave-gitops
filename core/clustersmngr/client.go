@@ -180,7 +180,7 @@ func (c *clustersClient) ClusteredList(ctx context.Context, clist ClusteredObjec
 			go func(clusterName, nsName string, c client.Client, optsWithNamespace ...client.ListOption) {
 				defer wg.Done()
 
-				list := clist.NewList()
+				list := clist.NewList(clusterName)
 
 				ctx, cancel := context.WithTimeout(ctx, clientTimeout)
 				defer cancel()
@@ -272,8 +272,10 @@ func (c clustersClient) Scoped(cluster string) (client.Client, error) {
 
 // ClusteredObjectList represents the returns of the lists of all clusters and namespaces user could query
 type ClusteredObjectList interface {
-	// NewList is a factory that returns a new concrete list being queried
-	NewList() client.ObjectList
+	// NewList is a factory that returns a new concrete list being queried.
+	// It receives the cluster name so callers can resolve a version that the
+	// cluster actually serves (Flux promotes API versions between releases).
+	NewList(cluster string) client.ObjectList
 	// AddObjectList adds a result list of objects to the lists map
 	AddObjectList(cluster string, namespaces []v1.Namespace, list client.ObjectList)
 	// Lists returns the map of lists from all clusters
@@ -289,13 +291,13 @@ type ClusteredObjectList interface {
 type ClusteredList struct {
 	sync.Mutex
 
-	listFactory   func() client.ObjectList
+	listFactory   func(cluster string) client.ObjectList
 	lists         map[string][]client.ObjectList
 	namespaces    map[string][]v1.Namespace
 	continueToken string
 }
 
-func NewClusteredList(listFactory func() client.ObjectList) ClusteredObjectList {
+func NewClusteredList(listFactory func(cluster string) client.ObjectList) ClusteredObjectList {
 	return &ClusteredList{
 		listFactory: listFactory,
 		lists:       make(map[string][]client.ObjectList),
@@ -303,8 +305,8 @@ func NewClusteredList(listFactory func() client.ObjectList) ClusteredObjectList 
 	}
 }
 
-func (cl *ClusteredList) NewList() client.ObjectList {
-	return cl.listFactory()
+func (cl *ClusteredList) NewList(cluster string) client.ObjectList {
+	return cl.listFactory(cluster)
 }
 
 func (cl *ClusteredList) AddObjectList(cluster string, namespaces []v1.Namespace, list client.ObjectList) {

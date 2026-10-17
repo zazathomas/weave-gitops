@@ -22,7 +22,7 @@ type GithubDeviceCodeResponse struct {
 // This does not need to be obfuscated because it is publicly available
 // to anyone who does an OAuth request via wego.
 // See the auth ADR for more details:
-// https://github.com/weaveworks/weave-gitops/blob/main/doc/adr/0005-wego-core-auth-strategy.md#design
+// https://github.com/zazathomas/weave-gitops/blob/main/doc/adr/0005-wego-core-auth-strategy.md#design
 const WeGOGithubClientID = "edcb13588d46f254052c"
 
 //counterfeiter:generate . GithubAuthClient

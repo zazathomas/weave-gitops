@@ -21,9 +21,9 @@ import (
 	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/weaveworks/weave-gitops/core/clustersmngr"
-	"github.com/weaveworks/weave-gitops/core/clustersmngr/cluster"
-	"github.com/weaveworks/weave-gitops/pkg/kube"
+	"github.com/zazathomas/weave-gitops/core/clustersmngr"
+	"github.com/zazathomas/weave-gitops/core/clustersmngr/cluster"
+	"github.com/zazathomas/weave-gitops/pkg/kube"
 )
 
 func TestClientGet(t *testing.T) {
@@ -92,7 +92,7 @@ func TestClientClusteredList(t *testing.T) {
 	ctx := t.Context()
 	g.Expect(k8sEnv.Client.Create(ctx, kust)).To(Succeed())
 
-	cklist := clustersmngr.NewClusteredList(func() client.ObjectList {
+	cklist := clustersmngr.NewClusteredList(func(string) client.ObjectList {
 		return &kustomizev1.KustomizationList{}
 	})
 
@@ -118,7 +118,7 @@ func TestClientClusteredList(t *testing.T) {
 
 	g.Expect(k8sEnv.Client.Create(ctx, gitRepo)).To(Succeed())
 
-	cgrlist := clustersmngr.NewClusteredList(func() client.ObjectList {
+	cgrlist := clustersmngr.NewClusteredList(func(string) client.ObjectList {
 		return &sourcev1.GitRepositoryList{}
 	})
 
@@ -173,7 +173,7 @@ func TestClientClusteredListPagination(t *testing.T) {
 	clustersClient := clustersmngr.NewClient(clientsPool, nsMap, logr.Discard())
 
 	// First request comes with no continue token
-	cklist := clustersmngr.NewClusteredList(func() client.ObjectList {
+	cklist := clustersmngr.NewClusteredList(func(string) client.ObjectList {
 		return &kustomizev1.KustomizationList{}
 	})
 	g.Expect(clustersClient.ClusteredList(ctx, cklist, namespaced, client.Limit(1), client.Continue(""))).To(Succeed())
@@ -184,7 +184,7 @@ func TestClientClusteredListPagination(t *testing.T) {
 	continueToken := cklist.GetContinue()
 
 	// Second request comes with the continue token
-	cklist = clustersmngr.NewClusteredList(func() client.ObjectList {
+	cklist = clustersmngr.NewClusteredList(func(string) client.ObjectList {
 		return &kustomizev1.KustomizationList{}
 	})
 	g.Expect(clustersClient.ClusteredList(ctx, cklist, namespaced, client.Limit(1), client.Continue(continueToken))).To(Succeed())
@@ -195,7 +195,7 @@ func TestClientClusteredListPagination(t *testing.T) {
 	continueToken = cklist.GetContinue()
 
 	// Third request comes with an empty namespaces continue token
-	cklist = clustersmngr.NewClusteredList(func() client.ObjectList {
+	cklist = clustersmngr.NewClusteredList(func(string) client.ObjectList {
 		return &kustomizev1.KustomizationList{}
 	})
 	g.Expect(clustersClient.ClusteredList(ctx, cklist, namespaced, client.Limit(1), client.Continue(continueToken))).To(Succeed())
@@ -243,7 +243,7 @@ func TestClientClusteredListClusterScoped(t *testing.T) {
 	ctx := t.Context()
 	g.Expect(k8sEnv.Client.Create(ctx, &clusterRole)).To(Succeed())
 
-	cklist := clustersmngr.NewClusteredList(func() client.ObjectList {
+	cklist := clustersmngr.NewClusteredList(func(string) client.ObjectList {
 		return &rbacv1.ClusterRoleList{}
 	})
 
@@ -269,7 +269,7 @@ func TestClientCLusteredListErrors(t *testing.T) {
 
 	clustersClient := clustersmngr.NewClient(clientsPool, nsMap, logr.Discard())
 
-	cklist := clustersmngr.NewClusteredList(func() client.ObjectList {
+	cklist := clustersmngr.NewClusteredList(func(string) client.ObjectList {
 		return &kustomizev1.KustomizationList{}
 	})
 
@@ -465,7 +465,7 @@ func TestClientPatch(t *testing.T) {
 		client.ForceOwnership,
 		client.FieldOwner("test"),
 	}
-	g.Expect(clustersClient.Patch(ctx, clusterName, kust, client.Apply, opt...)).To(Succeed())
+	g.Expect(clustersClient.Patch(ctx, clusterName, kust, client.Apply, opt...)).To(Succeed()) //nolint:staticcheck // SA1019: the test exercises the deprecated Apply patch type through the cluster wrapper
 
 	k := &kustomizev1.Kustomization{}
 	g.Expect(k8sEnv.Client.Get(ctx, types.NamespacedName{Name: appName, Namespace: ns.Name}, k)).To(Succeed())

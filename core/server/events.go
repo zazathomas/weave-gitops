@@ -11,9 +11,9 @@ import (
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/weaveworks/weave-gitops/core/clustersmngr"
-	pb "github.com/weaveworks/weave-gitops/pkg/api/core"
-	"github.com/weaveworks/weave-gitops/pkg/server/auth"
+	"github.com/zazathomas/weave-gitops/core/clustersmngr"
+	pb "github.com/zazathomas/weave-gitops/pkg/api/core"
+	"github.com/zazathomas/weave-gitops/pkg/server/auth"
 )
 
 func (cs *coreServer) ListEvents(ctx context.Context, msg *pb.ListEventsRequest) (*pb.ListEventsResponse, error) {
@@ -35,7 +35,7 @@ func (cs *coreServer) ListEvents(ctx context.Context, msg *pb.ListEventsRequest)
 		return nil, doClientError(err)
 	}
 
-	clist := clustersmngr.NewClusteredList(func() client.ObjectList {
+	clist := clustersmngr.NewClusteredList(func(string) client.ObjectList {
 		return &corev1.EventList{}
 	})
 
@@ -83,10 +83,11 @@ func (cs *coreServer) ListEvents(ctx context.Context, msg *pb.ListEventsRequest)
 }
 
 func list(ctx context.Context, k8s clustersmngr.Client, appName, namespace string, list clustersmngr.ClusteredObjectList, extraOpts ...client.ListOption) error {
-	opts := []client.ListOption{
+	opts := make([]client.ListOption, 0, 2+len(extraOpts))
+	opts = append(opts,
 		getMatchingLabels(appName),
 		client.InNamespace(namespace),
-	}
+	)
 
 	opts = append(opts, extraOpts...)
 	err := k8s.ClusteredList(ctx, list, true, opts...)

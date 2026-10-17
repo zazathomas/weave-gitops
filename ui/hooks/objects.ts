@@ -5,7 +5,9 @@ import { GetObjectResponse, ListError } from "../lib/api/core/core.pb";
 import { Kind, Object as ResponseObject } from "../lib/api/core/types.pb";
 import {
   Alert,
+  ArtifactGenerator,
   Bucket,
+  ExternalArtifact,
   FluxObject,
   GitRepository,
   HelmChart,
@@ -18,6 +20,7 @@ import {
   OCIRepository,
   Pod,
   Provider,
+  Receiver,
 } from "../lib/objects";
 import { ReactQueryOptions, RequestError } from "../lib/types";
 
@@ -34,6 +37,10 @@ export function convertResponse(
       return new Bucket(response);
     case Kind.OCIRepository:
       return new OCIRepository(response);
+    case Kind.ExternalArtifact:
+      return new ExternalArtifact(response);
+    case Kind.ArtifactGenerator:
+      return new ArtifactGenerator(response);
     case Kind.GitRepository:
       return new GitRepository(response);
     case Kind.Kustomization:
@@ -42,6 +49,8 @@ export function convertResponse(
       return new HelmRelease(response);
     case Kind.Provider:
       return new Provider(response);
+    case Kind.Receiver:
+      return new Receiver(response);
     case Kind.Alert:
       return new Alert(response);
     case Kind.ImageRepository:

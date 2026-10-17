@@ -7,9 +7,9 @@ import (
 	"github.com/hashicorp/go-multierror"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/weaveworks/weave-gitops/core/fluxsync"
-	pb "github.com/weaveworks/weave-gitops/pkg/api/core"
-	"github.com/weaveworks/weave-gitops/pkg/server/auth"
+	"github.com/zazathomas/weave-gitops/core/fluxsync"
+	pb "github.com/zazathomas/weave-gitops/pkg/api/core"
+	"github.com/zazathomas/weave-gitops/pkg/server/auth"
 )
 
 const (
@@ -46,7 +46,7 @@ func (cs *coreServer) ToggleSuspendResource(ctx context.Context, msg *pb.ToggleS
 			continue
 		}
 
-		obj := fluxsync.ToReconcileable(*gvk)
+		obj := fluxsync.ToReconcileable(cs.servedGVK(ctx, clusterName, *gvk))
 
 		log := cs.logger.WithValues(
 			"user", principal.ID,

@@ -16,9 +16,9 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 
-	"github.com/weaveworks/weave-gitops/pkg/kube"
-	logger2 "github.com/weaveworks/weave-gitops/pkg/logger"
-	"github.com/weaveworks/weave-gitops/pkg/run/constants"
+	"github.com/zazathomas/weave-gitops/pkg/kube"
+	logger2 "github.com/zazathomas/weave-gitops/pkg/logger"
+	"github.com/zazathomas/weave-gitops/pkg/run/constants"
 )
 
 func TestGetSessionLogsIntegration(t *testing.T) {
@@ -34,7 +34,8 @@ func TestGetSessionLogsIntegration(t *testing.T) {
 				gofakes3.LogErr,
 				gofakes3.LogWarn,
 				gofakes3.LogInfo,
-			))).Server()
+			),
+		)).Server()
 
 	s := httptest.NewServer(s3Server)
 	defer s.Close()

@@ -38,6 +38,8 @@ export function useListSources(
         Kind.Bucket,
         Kind.HelmChart,
         Kind.OCIRepository,
+        Kind.ExternalArtifact,
+        Kind.ArtifactGenerator,
       ].map((kind) =>
         api
           .ListObjects({ namespace, kind })

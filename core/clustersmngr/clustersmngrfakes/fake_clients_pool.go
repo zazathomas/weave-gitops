@@ -4,8 +4,8 @@ package clustersmngrfakes
 import (
 	"sync"
 
-	"github.com/weaveworks/weave-gitops/core/clustersmngr"
-	"github.com/weaveworks/weave-gitops/core/clustersmngr/cluster"
+	"github.com/zazathomas/weave-gitops/core/clustersmngr"
+	"github.com/zazathomas/weave-gitops/core/clustersmngr/cluster"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 

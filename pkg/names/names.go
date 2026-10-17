@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/weaveworks/weave-gitops/pkg/gitproviders"
+	"github.com/zazathomas/weave-gitops/pkg/gitproviders"
 )
 
 const MaxKubernetesResourceNameLength = 63

@@ -7,8 +7,8 @@ import (
 
 	helmv2 "github.com/fluxcd/helm-controller/api/v2"
 
-	"github.com/weaveworks/weave-gitops/core/clustersmngr"
-	pb "github.com/weaveworks/weave-gitops/pkg/api/core"
+	"github.com/zazathomas/weave-gitops/core/clustersmngr"
+	pb "github.com/zazathomas/weave-gitops/pkg/api/core"
 )
 
 func getHelmReleaseInventory(ctx context.Context, helmRelease helmv2.HelmRelease, c clustersmngr.Client, cluster string) ([]*pb.GroupVersionKind, error) {

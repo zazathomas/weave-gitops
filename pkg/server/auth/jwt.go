@@ -11,7 +11,7 @@ import (
 	"github.com/coreos/go-oidc/v3/oidc"
 	"github.com/go-logr/logr"
 
-	"github.com/weaveworks/weave-gitops/core/logger"
+	"github.com/zazathomas/weave-gitops/core/logger"
 )
 
 // PrincipalGetter implementations are responsible for extracting a named

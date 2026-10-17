@@ -13,6 +13,7 @@ import (
 	notificationv1 "github.com/fluxcd/notification-controller/api/v1"
 	notificationv1b3 "github.com/fluxcd/notification-controller/api/v1beta3"
 	sourcev1 "github.com/fluxcd/source-controller/api/v1"
+	sourcewatcherv1b1 "github.com/fluxcd/source-watcher/api/v2/v1beta1"
 	appsv1 "k8s.io/api/apps/v1"
 	authv1 "k8s.io/api/authentication/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -32,6 +33,7 @@ func CreateScheme() (*apiruntime.Scheme, error) {
 	builder := apiruntime.SchemeBuilder{
 		clientgoscheme.AddToScheme,
 		sourcev1.AddToScheme,
+		sourcewatcherv1b1.AddToScheme,
 		kustomizev1.AddToScheme,
 		helmv2.AddToScheme,
 		corev1.AddToScheme,

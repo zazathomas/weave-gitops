@@ -7,9 +7,9 @@ import (
 
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/weaveworks/weave-gitops/core/fluxsync"
-	pb "github.com/weaveworks/weave-gitops/pkg/api/core"
-	"github.com/weaveworks/weave-gitops/pkg/server/auth"
+	"github.com/zazathomas/weave-gitops/core/fluxsync"
+	pb "github.com/zazathomas/weave-gitops/pkg/api/core"
+	"github.com/zazathomas/weave-gitops/pkg/server/auth"
 )
 
 func (cs *coreServer) SyncFluxObject(ctx context.Context, msg *pb.SyncFluxObjectRequest) (*pb.SyncFluxObjectResponse, error) {
@@ -40,7 +40,7 @@ func (cs *coreServer) SyncFluxObject(ctx context.Context, msg *pb.SyncFluxObject
 			continue
 		}
 
-		obj := fluxsync.ToReconcileable(*gvk)
+		obj := fluxsync.ToReconcileable(cs.servedGVK(ctx, sync.ClusterName, *gvk))
 		if err := c.Get(ctx, key, obj.AsClientObject()); err != nil {
 			syncErr = errors.Join(syncErr, fmt.Errorf("error getting object: %w", err))
 			continue
@@ -55,7 +55,7 @@ func (cs *coreServer) SyncFluxObject(ctx context.Context, msg *pb.SyncFluxObject
 				return nil, err
 			}
 
-			sourceObj := fluxsync.ToReconcileable(*sourceGVK)
+			sourceObj := fluxsync.ToReconcileable(cs.servedGVK(ctx, sync.ClusterName, *sourceGVK))
 			sourceNs := sourceRef.Namespace()
 
 			// sourceRef.Namespace is an optional field in flux
@@ -100,7 +100,7 @@ func (cs *coreServer) SyncFluxObject(ctx context.Context, msg *pb.SyncFluxObject
 		)
 		log.Info("Syncing resource")
 
-		if err := fluxsync.RequestReconciliation(ctx, c, key, *gvk); err != nil {
+		if err := fluxsync.RequestReconciliation(ctx, c, key, obj.GroupVersionKind()); err != nil {
 			syncErr = errors.Join(syncErr, fmt.Errorf("requesting reconciliation: %w", err))
 			continue
 		}

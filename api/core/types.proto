@@ -6,7 +6,7 @@ syntax = "proto3";
 
 package gitops_core.v1;
 
-option go_package = "github.com/weaveworks/weave-gitops/core/api";
+option go_package = "github.com/zazathomas/weave-gitops/core/api";
 
 message Interval {
     int64 hours = 1;
@@ -33,6 +33,9 @@ enum Kind {
     ImagePolicy           = 12;
     Pod                   = 13;
     Policy                   = 14;
+    ExternalArtifact      = 15;
+    Receiver              = 16;
+    ArtifactGenerator     = 17;
 };
 
 /**
