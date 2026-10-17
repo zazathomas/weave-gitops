@@ -4770,7 +4770,7 @@ __metadata:
     "@types/react-dom": "npm:^19.1.6"
     "@types/react-is": "npm:^19"
     "@types/styled-components": "npm:^5.1.34"
-    ansi-styles: "npm:^6.2.1"
+    ansi-styles: "npm:^7.0.0"
     babel-jest: "npm:^30.2.0"
     babel-plugin-styled-components: "npm:^2.1.4"
     buffer: "npm:^6.0.3"
@@ -4918,10 +4918,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ansi-styles@npm:^6.1.0, ansi-styles@npm:^6.2.1":
+"ansi-styles@npm:^6.1.0":
   version: 6.2.1
   resolution: "ansi-styles@npm:6.2.1"
   checksum: 10c0/5d1ec38c123984bcedd996eac680d548f31828bd679a66db2bdf11844634dde55fec3efa9c6bb1d89056a5e79c1ac540c4c784d592ea1d25028a92227d2f2d5c
+  languageName: node
+  linkType: hard
+
+"ansi-styles@npm:^7.0.0":
+  version: 7.0.0
+  resolution: "ansi-styles@npm:7.0.0"
+  checksum: 10c0/406cf8984c682d632738964db918d895d84ec4ff39bffd0dddc81c4a4669a77b57adb0b58b26a1cc6ebcff0e30581d5946fc9b6f0394f6d9ac0b42f5ea97d216
   languageName: node
   linkType: hard
 
