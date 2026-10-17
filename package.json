@@ -103,7 +103,7 @@
     "@types/react-dom": "^19.1.6",
     "@types/react-is": "^19",
     "babel-jest": "^30.2.0",
-    "babel-plugin-styled-components": "^2.1.4",
+    "babel-plugin-styled-components": "^2.3.0",
     "buffer": "^6.0.3",
     "eslint": "9.37.0",
     "eslint-plugin-import": "^2.32.0",
