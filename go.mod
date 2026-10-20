@@ -18,7 +18,7 @@ require (
 	github.com/fluxcd/source-controller/api v1.9.6
 	github.com/fluxcd/source-watcher/api/v2 v2.2.4
 	github.com/go-git/go-git/v5 v5.19.1
-	github.com/go-jose/go-jose/v4 v4.1.4
+	github.com/go-jose/go-jose/v4 v4.1.6
 	github.com/go-logr/logr v1.4.4
 	github.com/go-logr/zapr v1.3.0
 	github.com/golang-jwt/jwt/v5 v5.3.1
