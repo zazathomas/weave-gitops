@@ -6,7 +6,7 @@ require (
 	github.com/NYTimes/gziphandler v1.1.1
 	github.com/alexedwards/scs/v2 v2.9.0
 	github.com/cheshir/ttlcache v1.0.1-0.20220504185148-8ceeff21b789
-	github.com/coreos/go-oidc/v3 v3.16.0
+	github.com/coreos/go-oidc/v3 v3.21.0
 	github.com/fluxcd/go-git-providers v0.29.0
 	github.com/fluxcd/helm-controller/api v1.6.5
 	github.com/fluxcd/image-automation-controller/api v1.2.5
