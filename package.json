@@ -82,8 +82,8 @@
     "styled-components": "^6.1.19"
   },
   "devDependencies": {
-    "@babel/core": "^7.28.5",
-    "@babel/preset-env": "^7.28.5",
+    "@babel/core": "^8.0.7",
+    "@babel/preset-env": "^8.0.7",
     "@emotion/babel-plugin": "^11.13.5",
     "@eslint/js": "9.39.5",
     "@parcel/config-default": "^2.16.4",
