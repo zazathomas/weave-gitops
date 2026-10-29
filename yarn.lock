@@ -4561,11 +4561,11 @@ __metadata:
   linkType: hard
 
 "@types/react-is@npm:^19":
-  version: 19.0.0
-  resolution: "@types/react-is@npm:19.0.0"
+  version: 19.3.0
+  resolution: "@types/react-is@npm:19.3.0"
   dependencies:
     "@types/react": "npm:*"
-  checksum: 10c0/d5fa0294f95cf301540f3e28fb44c00524c74a7de3ef9757703d76067206f3ecc002da6486e1581f23b54173b6449db8631acc3088009116e4569ff216df3ecc
+  checksum: 10c0/57391be255f8af062eed4c538d77f053a6479f5011cc68ac0c6fb75e5bec7a31b9e6e92ba58bfd069d928a8c400908c869574c8a6e88e0f6266057ef59c13adb
   languageName: node
   linkType: hard
 
@@ -5044,7 +5044,7 @@ __metadata:
     query-string: "npm:^9.3.1"
     react: "npm:^19.3.0"
     react-dom: "npm:^19.3.0"
-    react-is: "npm:^19.3.0"
+    react-is: "npm:^19.3.1"
     react-lottie-player: "npm:^2.1.0"
     react-markdown: "npm:^10.1.0"
     react-router: "npm:^7.18.4"
